@@ -6,5 +6,5 @@
     "strict": true,
     "outDir": "dist"
   },
-  "files": ["click-word.ts"]
+  "files": ["main.ts"]
 }
