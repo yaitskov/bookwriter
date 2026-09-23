@@ -1,4 +1,5 @@
 import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
+import { extractSentence } from "./sentence.js";
 import { ensureStyles } from "./style.js";
 
 const MARGIN = 4;
@@ -9,8 +10,8 @@ interface MenuState {
   clicked: ClickedWord;
 }
 
-function wrapWord({ node, start, end, word }: ClickedWord): void {
-  if (!node || !node.parentNode) return;
+function wrapWord({ node, start, end, word }: ClickedWord): HTMLSpanElement | null {
+  if (!node || !node.parentNode) return null;
   node.splitText(end);
   const middle = node.splitText(start);
   const span = document.createElement("span");
@@ -18,6 +19,7 @@ function wrapWord({ node, start, end, word }: ClickedWord): void {
   span.dataset.originWord = word;
   span.textContent = word;
   node.parentNode.replaceChild(span, middle);
+  return span;
 }
 
 function createMenu(): MenuState {
@@ -67,7 +69,10 @@ export function setupParagraphContextMenu(root: ParentNode = document): void {
     if (open) {
       const { word, node } = menu.clicked;
       console.log(word || null);
-      if (node) wrapWord(menu.clicked);
+      if (node) {
+        const span = wrapWord(menu.clicked);
+        if (span) console.log(extractSentence(span));
+      }
     }
     hide();
   });
