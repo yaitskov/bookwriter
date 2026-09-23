@@ -24,6 +24,12 @@ function wrapWord({ node, start, end, word }: ClickedWord): HTMLSpanElement | nu
   return span;
 }
 
+function applySynonym(span: HTMLSpanElement, synonym: string): void {
+  span.textContent = synonym;
+  span.classList.remove("unknown-word");
+  span.classList.add("synonym");
+}
+
 function createMenu(): MenuState {
   ensureStyles();
   const element = document.createElement("div");
@@ -78,7 +84,10 @@ export function setupParagraphContextMenu(root: ParentNode = document): void {
           console.log(sentence);
           void thesaurus
             .findSynonym(word, sentence)
-            .then((synonym) => console.log(synonym))
+            .then((synonym) => {
+              console.log(synonym);
+              applySynonym(span, synonym);
+            })
             .catch((error) => console.error(error));
         }
       }

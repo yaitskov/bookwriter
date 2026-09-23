@@ -33,6 +33,12 @@ export function ensureStyles(): void {
       border-radius: 2px;
       padding: 0 1px;
     }
+    .synonym {
+      background: #e8e8e8;
+      border: 1px solid #c0c0c0;
+      border-radius: 4px;
+      padding: 0 2px;
+    }
   `;
   document.head.appendChild(style);
 }
