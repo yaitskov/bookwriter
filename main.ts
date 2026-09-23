@@ -4,12 +4,56 @@ import { ensureStyles } from "./style.js";
 import { createThesaurus } from "./thesaurus.js";
 
 const MARGIN = 4;
+const CAMBRIDGE_BASE = "https://dictionary.cambridge.org/dictionary/english/";
 const thesaurus = createThesaurus();
 
-interface MenuState {
+interface Popup {
   element: HTMLDivElement;
-  item: HTMLButtonElement;
-  clicked: ClickedWord;
+  show(x: number, y: number): void;
+  hide(): void;
+  isOpen(): boolean;
+  contains(target: Node): boolean;
+}
+
+const popups: Popup[] = [];
+
+function createPopup(id: string): Popup {
+  const element = document.createElement("div");
+  element.id = id;
+  element.className = "word-menu";
+  let open = false;
+
+  const show = (x: number, y: number): void => {
+    element.style.visibility = "hidden";
+    element.style.display = "block";
+    const { width, height } = element.getBoundingClientRect();
+    const left = Math.min(x, window.innerWidth - width - MARGIN);
+    const top = Math.min(y, window.innerHeight - height - MARGIN);
+    element.style.left = `${Math.max(MARGIN, left)}px`;
+    element.style.top = `${Math.max(MARGIN, top)}px`;
+    element.style.visibility = "visible";
+    open = true;
+  };
+
+  const hide = (): void => {
+    element.style.display = "none";
+    open = false;
+  };
+
+  document.body.appendChild(element);
+  const popup: Popup = {
+    element,
+    show,
+    hide,
+    isOpen: () => open,
+    contains: (target) => element.contains(target),
+  };
+  popups.push(popup);
+  return popup;
+}
+
+function hideAll(): void {
+  for (const popup of popups) popup.hide();
 }
 
 function wrapWord({ node, start, end, word }: ClickedWord): HTMLSpanElement | null {
@@ -30,55 +74,47 @@ function applySynonym(span: HTMLSpanElement, synonym: string): void {
   span.classList.add("synonym");
 }
 
-function createMenu(): MenuState {
-  ensureStyles();
-  const element = document.createElement("div");
-  element.id = "unknown-word-menu";
-  const item = document.createElement("button");
-  item.type = "button";
-  item.textContent = "Unknown word";
-  element.appendChild(item);
-  document.body.appendChild(element);
-  return { element, item, clicked: { word: "", node: null, start: 0, end: 0 } };
-}
-
 export function setupParagraphContextMenu(root: ParentNode = document): void {
-  let menu = createMenu();
-  let open = false;
+  ensureStyles();
 
-  const hide = (): void => {
-    menu.element.style.display = "none";
-    open = false;
-  };
+  const unknownMenu = createPopup("unknown-word-menu");
+  const unknownItem = document.createElement("button");
+  unknownItem.type = "button";
+  unknownItem.textContent = "Unknown word";
+  unknownMenu.element.appendChild(unknownItem);
 
-  const show = (x: number, y: number, clicked: ClickedWord): void => {
-    menu.clicked = clicked;
-    menu.element.style.visibility = "hidden";
-    menu.element.style.display = "block";
-    const { width, height } = menu.element.getBoundingClientRect();
-    const left = Math.min(x, window.innerWidth - width - MARGIN);
-    const top = Math.min(y, window.innerHeight - height - MARGIN);
-    menu.element.style.left = `${Math.max(MARGIN, left)}px`;
-    menu.element.style.top = `${Math.max(MARGIN, top)}px`;
-    menu.element.style.visibility = "visible";
-    open = true;
-  };
+  const synonymMenu = createPopup("synonym-menu");
+  const synonymLabel = document.createElement("div");
+  synonymLabel.className = "menu-label";
+  const dictionaryItem = document.createElement("button");
+  dictionaryItem.type = "button";
+  dictionaryItem.textContent = "Open Cambridge Dictionary";
+  const rememberedItem = document.createElement("button");
+  rememberedItem.type = "button";
+  rememberedItem.textContent = "I remembered";
+  synonymMenu.element.append(synonymLabel, dictionaryItem, rememberedItem);
+
+  let clicked: ClickedWord = { word: "", node: null, start: 0, end: 0 };
+  let synonymSpan: HTMLSpanElement | null = null;
 
   const onKeydown = (event: KeyboardEvent): void => {
-    if (event.key === "Escape") hide();
+    if (event.key === "Escape") hideAll();
   };
 
   const onDocClick = (event: MouseEvent): void => {
-    if (open && !menu.element.contains(event.target as Node)) hide();
+    const target = event.target as Node;
+    for (const popup of popups) {
+      if (popup.isOpen() && !popup.contains(target)) popup.hide();
+    }
   };
 
-  menu.item.addEventListener("click", (event: MouseEvent) => {
+  unknownItem.addEventListener("click", (event: MouseEvent) => {
     event.stopPropagation();
-    if (open) {
-      const { word, node } = menu.clicked;
+    if (unknownMenu.isOpen()) {
+      const { word, node } = clicked;
       console.log(word || null);
       if (node) {
-        const span = wrapWord(menu.clicked);
+        const span = wrapWord(clicked);
         if (span) {
           const sentence = extractSentence(span);
           console.log(sentence);
@@ -92,7 +128,25 @@ export function setupParagraphContextMenu(root: ParentNode = document): void {
         }
       }
     }
-    hide();
+    unknownMenu.hide();
+  });
+
+  dictionaryItem.addEventListener("click", (event: MouseEvent) => {
+    event.stopPropagation();
+    if (synonymMenu.isOpen() && synonymSpan) {
+      const word = synonymSpan.dataset.originWord ?? synonymSpan.textContent ?? "";
+      window.open(`${CAMBRIDGE_BASE}${encodeURIComponent(word)}`, "_blank", "noopener");
+    }
+    synonymMenu.hide();
+  });
+
+  rememberedItem.addEventListener("click", (event: MouseEvent) => {
+    event.stopPropagation();
+    if (synonymMenu.isOpen() && synonymSpan) {
+      const word = synonymSpan.dataset.originWord ?? synonymSpan.textContent ?? "";
+      synonymSpan.replaceWith(document.createTextNode(word));
+    }
+    synonymMenu.hide();
   });
 
   document.addEventListener("click", onDocClick);
@@ -102,10 +156,20 @@ export function setupParagraphContextMenu(root: ParentNode = document): void {
     const mouseEvent = event as MouseEvent;
     if (mouseEvent.button !== 0) return;
     const target = event.target;
+    hideAll();
+
+    const synonym = target instanceof Element ? target.closest(".synonym") : null;
+    if (synonym instanceof HTMLSpanElement) {
+      event.preventDefault();
+      synonymSpan = synonym;
+      synonymLabel.textContent = synonym.dataset.originWord ?? synonym.textContent ?? "";
+      synonymMenu.show(mouseEvent.clientX, mouseEvent.clientY);
+      return;
+    }
+
     if (!(target instanceof HTMLParagraphElement)) return;
-    if (open) hide();
-    const clicked = extractClickedWord(target);
+    clicked = extractClickedWord(target);
     event.preventDefault();
-    show(mouseEvent.clientX, mouseEvent.clientY, clicked);
+    unknownMenu.show(mouseEvent.clientX, mouseEvent.clientY);
   });
 }

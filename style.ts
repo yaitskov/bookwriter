@@ -5,7 +5,7 @@ export function ensureStyles(): void {
   const style = document.createElement("style");
   style.id = STYLE_ID;
   style.textContent = `
-    #unknown-word-menu {
+    .word-menu {
       position: fixed;
       z-index: 10000;
       display: none;
@@ -16,7 +16,7 @@ export function ensureStyles(): void {
       padding: 4px 0;
       font: 14px system-ui, sans-serif;
     }
-    #unknown-word-menu button {
+    .word-menu button {
       display: block;
       width: 100%;
       padding: 6px 16px;
@@ -24,9 +24,16 @@ export function ensureStyles(): void {
       background: none;
       cursor: pointer;
       text-align: left;
+      font: inherit;
     }
-    #unknown-word-menu button:hover {
+    .word-menu button:hover {
       background: #f0f0f0;
+    }
+    .word-menu .menu-label {
+      padding: 6px 16px;
+      color: #666;
+      cursor: default;
+      user-select: none;
     }
     .unknown-word {
       background: #fff3b0;
