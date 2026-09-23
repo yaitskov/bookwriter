@@ -32,6 +32,12 @@ export function ensureStyles(): void {
       background: #fff3b0;
       border-radius: 2px;
       padding: 0 1px;
+      animation: unknown-word-pulse 2s ease-in-out infinite;
+    }
+    @keyframes unknown-word-pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.3; }
+      100% { opacity: 1; }
     }
     .synonym {
       background: #e8e8e8;
