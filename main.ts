@@ -1,4 +1,5 @@
 import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
+import { bindPersistence, createDictionary } from "./dictionary.js";
 import { extractSentence } from "./sentence.js";
 import { ensureStyles } from "./style.js";
 import { createThesaurus } from "./thesaurus.js";
@@ -77,6 +78,9 @@ function applySynonym(span: HTMLSpanElement, synonym: string): void {
 export function setupParagraphContextMenu(root: ParentNode = document): void {
   ensureStyles();
 
+  const dictionary = createDictionary();
+  bindPersistence(dictionary);
+
   const unknownMenu = createPopup("unknown-word-menu");
   const unknownItem = document.createElement("button");
   unknownItem.type = "button";
@@ -116,6 +120,7 @@ export function setupParagraphContextMenu(root: ParentNode = document): void {
       if (node) {
         const span = wrapWord(clicked);
         if (span) {
+          dictionary.add(word);
           const sentence = extractSentence(span);
           console.log(sentence);
           void thesaurus
@@ -145,6 +150,7 @@ export function setupParagraphContextMenu(root: ParentNode = document): void {
     if (synonymMenu.isOpen() && synonymSpan) {
       const word = synonymSpan.dataset.originWord ?? synonymSpan.textContent ?? "";
       synonymSpan.replaceWith(document.createTextNode(word));
+      dictionary.remove(word);
     }
     synonymMenu.hide();
   });
