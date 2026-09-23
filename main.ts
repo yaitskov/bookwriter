@@ -1,8 +1,10 @@
 import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
 import { extractSentence } from "./sentence.js";
 import { ensureStyles } from "./style.js";
+import { createThesaurus } from "./thesaurus.js";
 
 const MARGIN = 4;
+const thesaurus = createThesaurus();
 
 interface MenuState {
   element: HTMLDivElement;
@@ -71,7 +73,14 @@ export function setupParagraphContextMenu(root: ParentNode = document): void {
       console.log(word || null);
       if (node) {
         const span = wrapWord(menu.clicked);
-        if (span) console.log(extractSentence(span));
+        if (span) {
+          const sentence = extractSentence(span);
+          console.log(sentence);
+          void thesaurus
+            .findSynonym(word, sentence)
+            .then((synonym) => console.log(synonym))
+            .catch((error) => console.error(error));
+        }
       }
     }
     hide();
