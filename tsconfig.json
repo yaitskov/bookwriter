@@ -6,5 +6,5 @@
     "strict": true,
     "outDir": "dist"
   },
-  "files": ["main.ts"]
+  "files": ["main.ts", "sentence.ts"]
 }
