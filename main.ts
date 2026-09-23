@@ -1,4 +1,4 @@
-import { extractClickedWord } from "./clicked-word.js";
+import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
 import { ensureStyles } from "./style.js";
 
 const MARGIN = 4;
@@ -6,7 +6,18 @@ const MARGIN = 4;
 interface MenuState {
   element: HTMLDivElement;
   item: HTMLButtonElement;
-  word: string;
+  clicked: ClickedWord;
+}
+
+function wrapWord({ node, start, end, word }: ClickedWord): void {
+  if (!node || !node.parentNode) return;
+  node.splitText(end);
+  const middle = node.splitText(start);
+  const span = document.createElement("span");
+  span.className = "unknown-word";
+  span.dataset.originWord = word;
+  span.textContent = word;
+  node.parentNode.replaceChild(span, middle);
 }
 
 function createMenu(): MenuState {
@@ -18,7 +29,7 @@ function createMenu(): MenuState {
   item.textContent = "Unknown word";
   element.appendChild(item);
   document.body.appendChild(element);
-  return { element, item, word: "" };
+  return { element, item, clicked: { word: "", node: null, start: 0, end: 0 } };
 }
 
 export function setupParagraphContextMenu(root: ParentNode = document): void {
@@ -30,8 +41,8 @@ export function setupParagraphContextMenu(root: ParentNode = document): void {
     open = false;
   };
 
-  const show = (x: number, y: number, word: string): void => {
-    menu.word = word;
+  const show = (x: number, y: number, clicked: ClickedWord): void => {
+    menu.clicked = clicked;
     menu.element.style.visibility = "hidden";
     menu.element.style.display = "block";
     const { width, height } = menu.element.getBoundingClientRect();
@@ -53,7 +64,11 @@ export function setupParagraphContextMenu(root: ParentNode = document): void {
 
   menu.item.addEventListener("click", (event: MouseEvent) => {
     event.stopPropagation();
-    if (open) console.log(menu.word || null);
+    if (open) {
+      const { word, node } = menu.clicked;
+      console.log(word || null);
+      if (node) wrapWord(menu.clicked);
+    }
     hide();
   });
 
@@ -66,8 +81,8 @@ export function setupParagraphContextMenu(root: ParentNode = document): void {
     const target = event.target;
     if (!(target instanceof HTMLParagraphElement)) return;
     if (open) hide();
-    const word = extractClickedWord(target);
+    const clicked = extractClickedWord(target);
     event.preventDefault();
-    show(mouseEvent.clientX, mouseEvent.clientY, word);
+    show(mouseEvent.clientX, mouseEvent.clientY, clicked);
   });
 }

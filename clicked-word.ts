@@ -1,4 +1,11 @@
-export function extractClickedWord(p: HTMLParagraphElement): string {
+export interface ClickedWord {
+  word: string;
+  node: Text | null;
+  start: number;
+  end: number;
+}
+
+export function extractClickedWord(p: HTMLParagraphElement): ClickedWord {
   const selection = window.getSelection();
   if (selection && selection.rangeCount > 0) {
     const range = selection.getRangeAt(0).cloneRange();
@@ -16,22 +23,23 @@ export function extractClickedWord(p: HTMLParagraphElement): string {
       }
     }
 
-    if (node && node.textContent) {
+    if (node instanceof Text) {
       const text = node.textContent;
-      let start = Math.max(0, Math.min(offset, text.length));
-      let end = start;
-      const isWordChar = (ch: string): boolean => /[\w'’-]/.test(ch);
+      if (text !== null) {
+        let start = Math.max(0, Math.min(offset, text.length));
+        let end = start;
+        const isWordChar = (ch: string): boolean => /[\w'’-]/.test(ch);
 
-      while (start > 0 && isWordChar(text[start - 1])) start--;
-      while (end < text.length && isWordChar(text[end])) end++;
+        while (start > 0 && isWordChar(text[start - 1])) start--;
+        while (end < text.length && isWordChar(text[end])) end++;
 
-      if (start < end) {
-        return text.slice(start, end);
+        if (start < end) {
+          return { word: text.slice(start, end), node, start, end };
+        }
       }
     }
   }
 
   const words = p.textContent?.trim().split(/\s+/);
-  const fallback = words ? words[words.length - 1] : "";
-  return fallback;
+  return { word: words ? words[words.length - 1] : "", node: null, start: 0, end: 0 };
 }

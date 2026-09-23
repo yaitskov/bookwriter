@@ -28,6 +28,11 @@ export function ensureStyles(): void {
     #unknown-word-menu button:hover {
       background: #f0f0f0;
     }
+    .unknown-word {
+      background: #fff3b0;
+      border-radius: 2px;
+      padding: 0 1px;
+    }
   `;
   document.head.appendChild(style);
 }
