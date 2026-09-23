@@ -31,8 +31,9 @@ function extractClickedWord(p: HTMLParagraphElement): string {
     }
   }
 
-  const fallback = p.textContent?.trim().split(/\s+/)[0];
-  return fallback ?? "";
+  const words = p.textContent?.trim().split(/\s+/);
+  const fallback = words ? words[words.length - 1] : "";
+  return fallback;
 }
 
 export function setupClickWordLogging(root: ParentNode = document): void {
