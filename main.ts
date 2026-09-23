@@ -3,6 +3,7 @@ import { bindPersistence, createDictionary } from "./dictionary.js";
 import { extractSentence } from "./sentence.js";
 import { ensureStyles } from "./style.js";
 import { createThesaurus } from "./thesaurus.js";
+import { applySynonym, wrapWord } from "./word-span.js";
 
 const MARGIN = 4;
 const CAMBRIDGE_BASE = "https://dictionary.cambridge.org/dictionary/english/";
@@ -55,24 +56,6 @@ function createPopup(id: string): Popup {
 
 function hideAll(): void {
   for (const popup of popups) popup.hide();
-}
-
-function wrapWord({ node, start, end, word }: ClickedWord): HTMLSpanElement | null {
-  if (!node || !node.parentNode) return null;
-  node.splitText(end);
-  const middle = node.splitText(start);
-  const span = document.createElement("span");
-  span.className = "unknown-word";
-  span.dataset.originWord = word;
-  span.textContent = word;
-  node.parentNode.replaceChild(span, middle);
-  return span;
-}
-
-function applySynonym(span: HTMLSpanElement, synonym: string): void {
-  span.textContent = synonym;
-  span.classList.remove("unknown-word");
-  span.classList.add("synonym");
 }
 
 export function setupParagraphContextMenu(root: ParentNode = document): void {
