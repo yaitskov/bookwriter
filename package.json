@@ -1,0 +1,12 @@
+{
+  "name": "click-word",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "dev": "npm run build && serve ."
+  },
+  "devDependencies": {
+    "serve": "^14.2.4",
+    "typescript": "^7.0.2"
+  }
+}
