@@ -1,4 +1,5 @@
 import type { ClickedWord } from "./clicked-word.js";
+import type { UnknownWordDictionary } from "./dictionary.js";
 import { extractSentence } from "./sentence.js";
 import { createThesaurus, type Thesaurus } from "./thesaurus.js";
 import { applySynonym, wrapWord } from "./word-span.js";
@@ -7,6 +8,13 @@ const SKIP_SELECTOR = ".unknown-word, .synonym, .word-menu";
 
 export interface BulkSynonymOptions {
   thesaurus?: Thesaurus;
+}
+
+export function filterOutKnownWords(
+  words: string[],
+  dictionary: UnknownWordDictionary,
+): string[] {
+  return words.filter((word) => dictionary.has(word));
 }
 
 function isWordChar(ch: string | undefined): boolean {
