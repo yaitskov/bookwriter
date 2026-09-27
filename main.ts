@@ -1,3 +1,5 @@
+import { createBulkSynonym } from "./bulk-synonym.js";
+import { runBulkSynonym } from "./bulk-run.js";
 import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
 import { bindPersistence, createDictionary } from "./dictionary.js";
 import { extractSentence } from "./sentence.js";
@@ -161,4 +163,15 @@ export function setupParagraphContextMenu(root: ParentNode = document): void {
     event.preventDefault();
     unknownMenu.show(mouseEvent.clientX, mouseEvent.clientY);
   });
+
+  const bulk = createBulkSynonym({ thesaurus });
+  const startBulkRun = (): void => {
+    void runBulkSynonym({ bulk, dictionary, root: document.body });
+  };
+
+  if (document.readyState === "complete") {
+    startBulkRun();
+  } else {
+    window.addEventListener("load", startBulkRun, { once: true });
+  }
 }
