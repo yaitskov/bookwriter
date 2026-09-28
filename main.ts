@@ -2,6 +2,7 @@ import { createBulkSynonym } from "./bulk-synonym.js";
 import { runBulkSynonym } from "./bulk-run.js";
 import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
 import { bindPersistence, createDictionary } from "./dictionary.js";
+import { createUserSettings } from "./settings.js";
 import { extractSentence } from "./sentence.js";
 import { ensureStyles } from "./style.js";
 import { createThesaurus } from "./thesaurus.js";
@@ -65,6 +66,7 @@ export function setupParagraphContextMenu(root: ParentNode = document): void {
 
   const dictionary = createDictionary();
   bindPersistence(dictionary);
+  const settings = createUserSettings();
 
   const unknownMenu = createPopup("unknown-word-menu");
   const unknownItem = document.createElement("button");
@@ -166,7 +168,7 @@ export function setupParagraphContextMenu(root: ParentNode = document): void {
 
   const bulk = createBulkSynonym({ thesaurus });
   const startBulkRun = (): void => {
-    void runBulkSynonym({ bulk, dictionary, root: document.body });
+    void runBulkSynonym({ bulk, dictionary, settings, root: document.body });
   };
 
   if (document.readyState === "complete") {

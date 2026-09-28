@@ -1,7 +1,9 @@
 import type { ClickedWord } from "./clicked-word.js";
 import type { UnknownWordDictionary } from "./dictionary.js";
+import type { UserSettings } from "./settings.js";
 import { extractSentence } from "./sentence.js";
 import { createThesaurus, type Thesaurus } from "./thesaurus.js";
+import { wordFrequency } from "./word-frequency.js";
 import { applySynonym, wrapWord } from "./word-span.js";
 
 const SKIP_SELECTOR = ".unknown-word, .synonym, .word-menu";
@@ -13,8 +15,10 @@ export interface BulkSynonymOptions {
 export function filterOutKnownWords(
   words: string[],
   dictionary: UnknownWordDictionary,
+  settings: UserSettings,
 ): string[] {
-  return words.filter((word) => dictionary.has(word));
+  const mtwf = settings.maximumTriggerWordFrequency();
+  return words.filter((word) => dictionary.has(word) || wordFrequency(word) <= mtwf);
 }
 
 function isWordChar(ch: string | undefined): boolean {
