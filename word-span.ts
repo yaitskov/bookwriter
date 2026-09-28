@@ -26,3 +26,24 @@ export function applySynonym(
   span.classList.remove("unknown-word");
   span.classList.add("synonym");
 }
+
+export function restoreWord(span: HTMLSpanElement): string {
+  const word = span.dataset.originWord ?? span.textContent ?? "";
+  span.replaceWith(document.createTextNode(word));
+  return word;
+}
+
+export function restoreAllOccurrences(word: string, root: ParentNode): number {
+  const target = word.toLowerCase();
+  const spans = Array.from(
+    root.querySelectorAll<HTMLSpanElement>("span[data-origin-word]"),
+  );
+  let restored = 0;
+  for (const span of spans) {
+    if (!span.parentNode) continue;
+    if ((span.dataset.originWord ?? "").toLowerCase() !== target) continue;
+    restoreWord(span);
+    restored++;
+  }
+  return restored;
+}

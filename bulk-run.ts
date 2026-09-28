@@ -1,11 +1,9 @@
 import { extractBookContent } from "./BookExtraction.js";
-import { filterOutKnownWords, type BulkSynonym } from "./bulk-synonym.js";
-import type { UnknownWordDictionary } from "./dictionary.js";
+import { filterOutKnownWords, type BulkSynonym, type WordDictionaries } from "./bulk-synonym.js";
 import type { UserSettings } from "./settings.js";
 
-export interface BulkRunOptions {
+export interface BulkRunOptions extends WordDictionaries {
   bulk: BulkSynonym;
-  dictionary: UnknownWordDictionary;
   settings: UserSettings;
   root?: ParentNode;
   now?: () => number;
@@ -48,13 +46,13 @@ export function formatStats(stats: BulkRunStats): string {
 }
 
 export async function runBulkSynonym(options: BulkRunOptions): Promise<BulkRunStats[]> {
-  const { bulk, dictionary, settings } = options;
+  const { bulk, known, unknown, settings } = options;
   const root = options.root ?? document.body;
   const now = options.now ?? (() => performance.now());
   const log = options.log ?? ((message: string) => console.log(message));
   const error = options.error ?? ((message: string) => console.error(message));
 
-  const words = filterOutKnownWords(extractBookContent(root), dictionary, settings);
+  const words = filterOutKnownWords(extractBookContent(root), { known, unknown }, settings);
   log(
     `[bulk] mtwf ${settings.maximumTriggerWordFrequency()}, ${words.length} word(s) to replace`,
   );

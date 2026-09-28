@@ -1,12 +1,14 @@
 import { createBulkSynonym } from "./bulk-synonym.js";
 import { runBulkSynonym } from "./bulk-run.js";
 import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
-import { bindPersistence, createDictionary } from "./dictionary.js";
+import { createKnownWordDictionary } from "./known-word-dictionary.js";
 import { createUserSettings } from "./settings.js";
 import { extractSentence } from "./sentence.js";
 import { ensureStyles } from "./style.js";
 import { createThesaurus } from "./thesaurus.js";
-import { applySynonym, wrapWord } from "./word-span.js";
+import { createUnknownWordDictionary } from "./unknown-word-dictionary.js";
+import { bindPersistence } from "./word-dictionary.js";
+import { applySynonym, restoreAllOccurrences, wrapWord } from "./word-span.js";
 
 const MARGIN = 4;
 const CAMBRIDGE_BASE = "https://dictionary.cambridge.org/dictionary/english/";
@@ -64,8 +66,10 @@ function hideAll(): void {
 export function setupParagraphContextMenu(root: ParentNode = document): void {
   ensureStyles();
 
-  const dictionary = createDictionary();
-  bindPersistence(dictionary);
+  const known = createKnownWordDictionary();
+  const unknown = createUnknownWordDictionary();
+  bindPersistence(known);
+  bindPersistence(unknown);
   const settings = createUserSettings();
 
   const unknownMenu = createPopup("unknown-word-menu");
@@ -107,7 +111,8 @@ export function setupParagraphContextMenu(root: ParentNode = document): void {
       if (node) {
         const span = wrapWord(clicked);
         if (span) {
-          dictionary.add(word);
+          known.remove(word);
+          unknown.add(word);
           const sentence = extractSentence(span);
           console.log(sentence);
           void thesaurus
@@ -136,8 +141,10 @@ export function setupParagraphContextMenu(root: ParentNode = document): void {
     event.stopPropagation();
     if (synonymMenu.isOpen() && synonymSpan) {
       const word = synonymSpan.dataset.originWord ?? synonymSpan.textContent ?? "";
-      synonymSpan.replaceWith(document.createTextNode(word));
-      dictionary.remove(word);
+      const restored = restoreAllOccurrences(word, document.body);
+      unknown.remove(word);
+      known.add(word);
+      console.log(`[known] "${word}" restored ${restored} occurrence(s)`);
     }
     synonymMenu.hide();
   });
@@ -168,7 +175,7 @@ export function setupParagraphContextMenu(root: ParentNode = document): void {
 
   const bulk = createBulkSynonym({ thesaurus });
   const startBulkRun = (): void => {
-    void runBulkSynonym({ bulk, dictionary, settings, root: document.body });
+    void runBulkSynonym({ bulk, known, unknown, settings, root: document.body });
   };
 
   if (document.readyState === "complete") {

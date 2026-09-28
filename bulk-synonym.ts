@@ -1,5 +1,6 @@
 import type { ClickedWord } from "./clicked-word.js";
-import type { UnknownWordDictionary } from "./dictionary.js";
+import type { KnownWordDictionary } from "./known-word-dictionary.js";
+import type { UnknownWordDictionary } from "./unknown-word-dictionary.js";
 import type { UserSettings } from "./settings.js";
 import { extractSentence } from "./sentence.js";
 import { createThesaurus, type Thesaurus } from "./thesaurus.js";
@@ -12,13 +13,23 @@ export interface BulkSynonymOptions {
   thesaurus?: Thesaurus;
 }
 
+export interface WordDictionaries {
+  known: KnownWordDictionary;
+  unknown: UnknownWordDictionary;
+}
+
 export function filterOutKnownWords(
   words: string[],
-  dictionary: UnknownWordDictionary,
+  dictionaries: WordDictionaries,
   settings: UserSettings,
 ): string[] {
   const mtwf = settings.maximumTriggerWordFrequency();
-  return words.filter((word) => dictionary.has(word) || wordFrequency(word) <= mtwf);
+  return words.filter(
+    (word) =>
+      !dictionaries.known.has(word) &&
+      (dictionaries.unknown.has(word) ||
+       wordFrequency(word) <= mtwf),
+  );
 }
 
 function isWordChar(ch: string | undefined): boolean {

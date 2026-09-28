@@ -1,6 +1,4 @@
-const STORAGE_KEY = "unknown-word-dictionary";
-
-export interface UnknownWordDictionary {
+export interface WordDictionary {
   has(word: string): boolean;
   add(word: string): void;
   remove(word: string): void;
@@ -8,35 +6,46 @@ export interface UnknownWordDictionary {
   flush(): void;
 }
 
-function load(storage: Storage): Set<string> {
+function normalize(word: string): string {
+  return word.toLowerCase();
+}
+
+function load(storage: Storage, key: string): Set<string> {
   try {
-    const raw = storage.getItem(STORAGE_KEY);
+    const raw = storage.getItem(key);
     if (!raw) return new Set();
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return new Set();
-    return new Set(parsed.filter((word): word is string => typeof word === "string"));
+    return new Set(
+      parsed
+        .filter((word): word is string => typeof word === "string")
+        .map((word) => normalize(word)),
+    );
   } catch {
     return new Set();
   }
 }
 
-class Dictionary implements UnknownWordDictionary {
+class Dictionary implements WordDictionary {
   private readonly wordsSet: Set<string>;
 
-  constructor(private readonly storage: Storage) {
-    this.wordsSet = load(storage);
+  constructor(
+    private readonly storage: Storage,
+    private readonly key: string,
+  ) {
+    this.wordsSet = load(storage, key);
   }
 
   has(word: string): boolean {
-    return this.wordsSet.has(word);
+    return this.wordsSet.has(normalize(word));
   }
 
   add(word: string): void {
-    this.wordsSet.add(word);
+    this.wordsSet.add(normalize(word));
   }
 
   remove(word: string): void {
-    this.wordsSet.delete(word);
+    this.wordsSet.delete(normalize(word));
   }
 
   words(): string[] {
@@ -45,19 +54,22 @@ class Dictionary implements UnknownWordDictionary {
 
   flush(): void {
     try {
-      this.storage.setItem(STORAGE_KEY, JSON.stringify(this.words()));
+      this.storage.setItem(this.key, JSON.stringify(this.words()));
     } catch {
       // Ignore storage failures (e.g. quota exceeded or disabled storage).
     }
   }
 }
 
-export function createDictionary(storage: Storage = sessionStorage): UnknownWordDictionary {
-  return new Dictionary(storage);
+export function createWordDictionary(
+  key: string,
+  storage: Storage = sessionStorage,
+): WordDictionary {
+  return new Dictionary(storage, key);
 }
 
 export function bindPersistence(
-  dictionary: UnknownWordDictionary,
+  dictionary: WordDictionary,
   win: Window = window,
   doc: Document = document,
 ): void {
