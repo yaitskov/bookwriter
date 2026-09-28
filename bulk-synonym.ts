@@ -5,9 +5,9 @@ import type { UserSettings } from "./settings.js";
 import { extractSentence } from "./sentence.js";
 import { createThesaurus, type Thesaurus } from "./thesaurus.js";
 import { wordFrequency } from "./word-frequency.js";
-import { applySynonym, wrapWord } from "./word-span.js";
+import { applySynonym, restoreWord, wrapWord } from "./word-span.js";
 
-const SKIP_SELECTOR = ".unknown-word, .synonym, .word-menu";
+const SKIP_SELECTOR = ".unknown-word, .synonym, .word-menu, .settings-dialog-backdrop";
 
 export interface BulkSynonymOptions {
   thesaurus?: Thesaurus;
@@ -30,6 +30,34 @@ export function filterOutKnownWords(
       (dictionaries.unknown.has(word) ||
        wordFrequency(word) <= mtwf),
   );
+}
+
+export interface RevertResult {
+  words: string[];
+  occurrences: number;
+}
+
+export function restoreIneligibleSynonyms(
+  root: ParentNode,
+  dictionaries: WordDictionaries,
+  mtwf: number,
+): RevertResult {
+  const spans = Array.from(
+    root.querySelectorAll<HTMLSpanElement>("span.synonym[data-origin-word]"),
+  );
+  const reverted: string[] = [];
+  let occurrences = 0;
+  for (const span of spans) {
+    if (!span.parentNode) continue;
+    const word = (span.dataset.originWord ?? "").toLowerCase();
+    if (!word) continue;
+    if (dictionaries.unknown.has(word)) continue;
+    if (wordFrequency(word) <= mtwf) continue;
+    restoreWord(span);
+    if (!reverted.includes(word)) reverted.push(word);
+    occurrences++;
+  }
+  return { words: reverted, occurrences };
 }
 
 function isWordChar(ch: string | undefined): boolean {

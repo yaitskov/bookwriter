@@ -1,8 +1,9 @@
-import { createBulkSynonym } from "./bulk-synonym.js";
+import { createBulkSynonym, restoreIneligibleSynonyms } from "./bulk-synonym.js";
 import { runBulkSynonym } from "./bulk-run.js";
 import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
 import { createKnownWordDictionary } from "./known-word-dictionary.js";
 import { createUserSettings } from "./settings.js";
+import { createSettingsDialog } from "./settings-dialog.js";
 import { extractSentence } from "./sentence.js";
 import { ensureStyles } from "./style.js";
 import { createThesaurus } from "./thesaurus.js";
@@ -71,15 +72,56 @@ export function setupParagraphContextMenu(root: ParentNode = document): void {
   bindPersistence(known);
   bindPersistence(unknown);
   const settings = createUserSettings();
+  const bulk = createBulkSynonym({ thesaurus });
+
+  let bulkRunning = false;
+  const startBulkRun = (): void => {
+    if (bulkRunning) {
+      console.log("[bulk] already running, skipping");
+      return;
+    }
+    bulkRunning = true;
+    void runBulkSynonym({ bulk, known, unknown, settings, root: document.body }).finally(() => {
+      bulkRunning = false;
+    });
+  };
+
+  const applyMaximumTriggerWordFrequency = (next: number): void => {
+    const previous = settings.maximumTriggerWordFrequency();
+    if (next === previous) return;
+    settings.setMaximumTriggerWordFrequency(next);
+    if (next < previous) {
+      const reverted = restoreIneligibleSynonyms(
+        document.body,
+        { known, unknown },
+        settings.maximumTriggerWordFrequency(),
+      );
+      console.log(
+        `[settings] mtwf ${previous} -> ${next}, restored ${reverted.occurrences} occurrence(s) of ${reverted.words.length} word(s) (expected 0: a raised maximum never invalidates an earlier decision)`,
+      );
+
+    } else {
+      console.log(`[settings] mtwf ${previous} -> ${next}, looking for newly eligible words`);
+      startBulkRun();
+    }
+  };
+
+  const settingsDialog = createSettingsDialog({
+    settings,
+    onApply: applyMaximumTriggerWordFrequency,
+  });
 
   const unknownMenu = createPopup("unknown-word-menu");
   const unknownItem = document.createElement("button");
   unknownItem.type = "button";
   unknownItem.textContent = "Unknown word";
+  const unknownSettingsItem = document.createElement("button");
+  unknownSettingsItem.type = "button";
+  unknownSettingsItem.textContent = "Settings…";
   const hideItem = document.createElement("button");
   hideItem.type = "button";
   hideItem.textContent = "Hide (Esc)";
-  unknownMenu.element.append(unknownItem, hideItem);
+  unknownMenu.element.append(unknownItem, unknownSettingsItem, hideItem);
 
   const synonymMenu = createPopup("synonym-menu");
   const synonymLabel = document.createElement("div");
@@ -90,13 +132,26 @@ export function setupParagraphContextMenu(root: ParentNode = document): void {
   const rememberedItem = document.createElement("button");
   rememberedItem.type = "button";
   rememberedItem.textContent = "I remembered";
-  synonymMenu.element.append(synonymLabel, dictionaryItem, rememberedItem);
+  const synonymSettingsItem = document.createElement("button");
+  synonymSettingsItem.type = "button";
+  synonymSettingsItem.textContent = "Settings…";
+  synonymMenu.element.append(
+    synonymLabel,
+    dictionaryItem,
+    rememberedItem,
+    synonymSettingsItem,
+  );
 
   let clicked: ClickedWord = { word: "", node: null, start: 0, end: 0 };
   let synonymSpan: HTMLSpanElement | null = null;
 
   const onKeydown = (event: KeyboardEvent): void => {
-    if (event.key === "Escape") hideAll();
+    if (event.key !== "Escape") return;
+    if (settingsDialog.isOpen()) {
+      settingsDialog.hide();
+      return;
+    }
+    hideAll();
   };
 
   const onDocClick = (event: MouseEvent): void => {
@@ -129,6 +184,20 @@ export function setupParagraphContextMenu(root: ParentNode = document): void {
       }
     }
     unknownMenu.hide();
+  });
+
+  const openSettings = (menu: Popup, event: MouseEvent): void => {
+    event.stopPropagation();
+    menu.hide();
+    settingsDialog.show();
+  };
+
+  unknownSettingsItem.addEventListener("click", (event: MouseEvent) => {
+    openSettings(unknownMenu, event);
+  });
+
+  synonymSettingsItem.addEventListener("click", (event: MouseEvent) => {
+    openSettings(synonymMenu, event);
   });
 
   hideItem.addEventListener("click", (event: MouseEvent) => {
@@ -180,11 +249,6 @@ export function setupParagraphContextMenu(root: ParentNode = document): void {
     event.preventDefault();
     unknownMenu.show(mouseEvent.clientX, mouseEvent.clientY);
   });
-
-  const bulk = createBulkSynonym({ thesaurus });
-  const startBulkRun = (): void => {
-    void runBulkSynonym({ bulk, known, unknown, settings, root: document.body });
-  };
 
   if (document.readyState === "complete") {
     startBulkRun();

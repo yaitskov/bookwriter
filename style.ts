@@ -52,6 +52,81 @@ export function ensureStyles(): void {
       border-radius: 4px;
       padding: 0 2px;
     }
+    .settings-dialog-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 10001;
+      display: none;
+      background: rgba(0, 0, 0, 0.35);
+      font: 14px system-ui, sans-serif;
+    }
+    .settings-dialog {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10002;
+      min-width: 340px;
+      max-width: 90vw;
+      background: #fff;
+      border: 1px solid #d0d0d0;
+      border-radius: 6px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      padding: 16px 20px;
+      color: #222;
+    }
+    .settings-dialog h2 {
+      margin: 0 0 12px;
+      font-size: 15px;
+    }
+    .settings-dialog label {
+      display: block;
+      margin-bottom: 8px;
+    }
+    .settings-dialog input[type="range"] {
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .settings-dialog .settings-value {
+      margin-top: 8px;
+      color: #666;
+      font: 12px ui-monospace, monospace;
+      user-select: none;
+    }
+    .settings-dialog .settings-hint {
+      margin: 8px 0 0;
+      color: #666;
+      font-size: 12px;
+    }
+    .settings-dialog .settings-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .settings-dialog button {
+      padding: 6px 14px;
+      border: 1px solid #d0d0d0;
+      border-radius: 4px;
+      background: #fff;
+      cursor: pointer;
+      font: inherit;
+    }
+    .settings-dialog button:hover:enabled {
+      background: #f0f0f0;
+    }
+    .settings-dialog button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    .settings-dialog .settings-apply {
+      background: #2b6cb0;
+      border-color: #2a5f96;
+      color: #fff;
+    }
+    .settings-dialog .settings-apply:hover:enabled {
+      background: #2a5f96;
+    }
   `;
   document.head.appendChild(style);
 }
