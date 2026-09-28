@@ -1,0 +1,13 @@
+{
+  "$schema": "https://opencode.ai/config.json",  
+  "permission": {
+    "read": {
+      "word-frequency-table.ts": "deny",
+      "*": "allow"
+    },
+    "bash": {
+      "word-frequency-table.ts": "deny",
+      "*": "allow"      
+    }
+  }
+}

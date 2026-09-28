@@ -6,5 +6,5 @@
     "strict": true,
     "outDir": "dist"
   },
-  "files": ["main.ts", "sentence.ts", "bulk-synonym.ts", "BookExtraction.ts", "bulk-run.ts"]
+  "files": ["main.ts", "sentence.ts", "bulk-synonym.ts", "BookExtraction.ts", "bulk-run.ts", "word-frequency-table.ts"]
 }

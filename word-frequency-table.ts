@@ -1,4 +1,4 @@
-export const WFT : Map<string, number> = {
+export const WFT : { [key: string]: number; } = {
   "the": 0.0393383751,
   "of": 0.0223625253,
   "and": 0.0221001576,
