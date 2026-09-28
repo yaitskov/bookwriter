@@ -3,10 +3,12 @@
   "permission": {
     "read": {
       "word-frequency-table.ts": "deny",
+      "todo.org": "deny",
       "*": "allow"
     },
     "bash": {
       "word-frequency-table.ts": "deny",
+      "todo.org": "deny",
       "*": "allow"      
     }
   }
