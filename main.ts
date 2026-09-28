@@ -76,7 +76,10 @@ export function setupParagraphContextMenu(root: ParentNode = document): void {
   const unknownItem = document.createElement("button");
   unknownItem.type = "button";
   unknownItem.textContent = "Unknown word";
-  unknownMenu.element.appendChild(unknownItem);
+  const hideItem = document.createElement("button");
+  hideItem.type = "button";
+  hideItem.textContent = "Hide (Esc)";
+  unknownMenu.element.append(unknownItem, hideItem);
 
   const synonymMenu = createPopup("synonym-menu");
   const synonymLabel = document.createElement("div");
@@ -125,6 +128,11 @@ export function setupParagraphContextMenu(root: ParentNode = document): void {
         }
       }
     }
+    unknownMenu.hide();
+  });
+
+  hideItem.addEventListener("click", (event: MouseEvent) => {
+    event.stopPropagation();
     unknownMenu.hide();
   });
 
