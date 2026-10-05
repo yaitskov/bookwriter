@@ -1,5 +1,11 @@
 # An adaptive bookreader app 
 
+## Tmp dir
+- use tmp in project root for testing files
+## Format
+- trim trailing spaces
+- add new lines to last line in file
+
 ## Don't read 
 - word-frequency-table.ts
 
