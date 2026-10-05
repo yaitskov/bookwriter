@@ -219,7 +219,7 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
     event.stopPropagation();
     if (synonymMenu.isOpen() && synonymSpan) {
       const word = synonymSpan.dataset.originWord ?? synonymSpan.textContent ?? "";
-      const restored = restoreAllOccurrences(word, doc.body);
+      const restored = restoreAllOccurrences(word, bookContent);
       unknown.remove(word);
       known.add(word);
       console.log(`[known] "${word}" restored ${restored} occurrence(s)`);
