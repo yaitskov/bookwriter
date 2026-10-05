@@ -64,7 +64,7 @@ function hideAll(): void {
   for (const popup of popups) popup.hide();
 }
 
-export function setupParagraphContextMenu(root: ParentNode = document): void {
+export function initApp(root: ParentNode = document): void {
   ensureStyles();
 
   const known = createKnownWordDictionary();
