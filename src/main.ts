@@ -64,7 +64,7 @@ function hideAll(): void {
   for (const popup of popups) popup.hide();
 }
 
-export function initApp(root: ParentNode = document): void {
+export function initApp(bookContent: HTMLDivElement, doc: ParentNode = document): void {
   ensureStyles();
 
   const known = createKnownWordDictionary();
@@ -81,7 +81,7 @@ export function initApp(root: ParentNode = document): void {
       return;
     }
     bulkRunning = true;
-    void runBulkSynonym({ bulk, known, unknown, settings, root: document.body }).finally(() => {
+    void runBulkSynonym({ bulk, known, unknown, settings, root: bookContent }).finally(() => {
       bulkRunning = false;
     });
   };
@@ -229,13 +229,15 @@ export function initApp(root: ParentNode = document): void {
   document.addEventListener("click", onDocClick);
   document.addEventListener("keydown", onKeydown);
 
-  root.addEventListener("click", (event: Event) => {
+  document.addEventListener("click", (event: Event) => {
     const mouseEvent = event as MouseEvent;
     if (mouseEvent.button !== 0) return;
     const target = event.target;
     hideAll();
+    if (!(target instanceof Element)) { return; }
+    if (!target.closest("#book-content")) { return; }
 
-    const synonym = target instanceof Element ? target.closest(".synonym") : null;
+    const synonym = target.closest(".synonym");
     if (synonym instanceof HTMLSpanElement) {
       event.preventDefault();
       synonymSpan = synonym;
