@@ -2,14 +2,14 @@
   "$schema": "https://opencode.ai/config.json",  
   "permission": {
     "read": {
-      "word-frequency-table.ts": "deny",
-      "todo.org": "deny",
-      "*": "allow"
+      "*": "allow",
+      "**/word-frequency-table.ts": "deny",
+      "todo.org": "deny"
     },
     "bash": {
-      "word-frequency-table.ts": "deny",
-      "todo.org": "deny",
-      "*": "allow"      
+      "*": "allow",
+      "*word-frequency-table*": "deny",
+      "*todo.org*": "deny"      
     }
   }
 }
