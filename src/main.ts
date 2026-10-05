@@ -25,8 +25,8 @@ interface Popup {
 
 const popups: Popup[] = [];
 
-function createPopup(id: string): Popup {
-  const element = document.createElement("div");
+function createPopup(doc: Document, id: string): Popup {
+  const element = doc.createElement("div");
   element.id = id;
   element.className = "word-menu";
   let open = false;
@@ -48,7 +48,7 @@ function createPopup(id: string): Popup {
     open = false;
   };
 
-  document.body.appendChild(element);
+  doc.body.appendChild(element);
   const popup: Popup = {
     element,
     show,
@@ -64,13 +64,13 @@ function hideAll(): void {
   for (const popup of popups) popup.hide();
 }
 
-export function initApp(bookContent: HTMLDivElement, doc: ParentNode = document): void {
-  ensureStyles();
+export function initApp(bookContent: HTMLDivElement, doc: Document = document): void {
+  ensureStyles(doc);
 
   const known = createKnownWordDictionary();
   const unknown = createUnknownWordDictionary();
-  bindPersistence(known);
-  bindPersistence(unknown);
+  bindPersistence(known, window, doc);
+  bindPersistence(unknown, window, doc);
   const settings = createUserSettings();
   const bulk = createBulkSynonym({ thesaurus });
 
@@ -92,7 +92,7 @@ export function initApp(bookContent: HTMLDivElement, doc: ParentNode = document)
     settings.setMaximumTriggerWordFrequency(next);
     if (next < previous) {
       const reverted = restoreIneligibleSynonyms(
-        document.body,
+        doc.body,
         { known, unknown },
         settings.maximumTriggerWordFrequency(),
       );
@@ -109,30 +109,31 @@ export function initApp(bookContent: HTMLDivElement, doc: ParentNode = document)
   const settingsDialog = createSettingsDialog({
     settings,
     onApply: applyMaximumTriggerWordFrequency,
+    doc,
   });
 
-  const unknownMenu = createPopup("unknown-word-menu");
-  const unknownItem = document.createElement("button");
+  const unknownMenu = createPopup(doc, "unknown-word-menu");
+  const unknownItem = doc.createElement("button");
   unknownItem.type = "button";
   unknownItem.textContent = "Unknown word";
-  const unknownSettingsItem = document.createElement("button");
+  const unknownSettingsItem = doc.createElement("button");
   unknownSettingsItem.type = "button";
   unknownSettingsItem.textContent = "Settings…";
-  const hideItem = document.createElement("button");
+  const hideItem = doc.createElement("button");
   hideItem.type = "button";
   hideItem.textContent = "Hide (Esc)";
   unknownMenu.element.append(unknownItem, unknownSettingsItem, hideItem);
 
-  const synonymMenu = createPopup("synonym-menu");
-  const synonymLabel = document.createElement("div");
+  const synonymMenu = createPopup(doc, "synonym-menu");
+  const synonymLabel = doc.createElement("div");
   synonymLabel.className = "menu-label";
-  const dictionaryItem = document.createElement("button");
+  const dictionaryItem = doc.createElement("button");
   dictionaryItem.type = "button";
   dictionaryItem.textContent = "Open Cambridge Dictionary";
-  const rememberedItem = document.createElement("button");
+  const rememberedItem = doc.createElement("button");
   rememberedItem.type = "button";
   rememberedItem.textContent = "I remembered";
-  const synonymSettingsItem = document.createElement("button");
+  const synonymSettingsItem = doc.createElement("button");
   synonymSettingsItem.type = "button";
   synonymSettingsItem.textContent = "Settings…";
   synonymMenu.element.append(
@@ -218,7 +219,7 @@ export function initApp(bookContent: HTMLDivElement, doc: ParentNode = document)
     event.stopPropagation();
     if (synonymMenu.isOpen() && synonymSpan) {
       const word = synonymSpan.dataset.originWord ?? synonymSpan.textContent ?? "";
-      const restored = restoreAllOccurrences(word, document.body);
+      const restored = restoreAllOccurrences(word, doc.body);
       unknown.remove(word);
       known.add(word);
       console.log(`[known] "${word}" restored ${restored} occurrence(s)`);
@@ -226,10 +227,10 @@ export function initApp(bookContent: HTMLDivElement, doc: ParentNode = document)
     synonymMenu.hide();
   });
 
-  document.addEventListener("click", onDocClick);
-  document.addEventListener("keydown", onKeydown);
+  doc.addEventListener("click", onDocClick);
+  doc.addEventListener("keydown", onKeydown);
 
-  document.addEventListener("click", (event: Event) => {
+  doc.addEventListener("click", (event: Event) => {
     const mouseEvent = event as MouseEvent;
     if (mouseEvent.button !== 0) return;
     const target = event.target;
@@ -252,7 +253,7 @@ export function initApp(bookContent: HTMLDivElement, doc: ParentNode = document)
     unknownMenu.show(mouseEvent.clientX, mouseEvent.clientY);
   });
 
-  if (document.readyState === "complete") {
+  if (doc.readyState === "complete") {
     startBulkRun();
   } else {
     window.addEventListener("load", startBulkRun, { once: true });

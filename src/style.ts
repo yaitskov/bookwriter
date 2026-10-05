@@ -1,8 +1,8 @@
 const STYLE_ID = "click-word-menu-styles";
 
-export function ensureStyles(): void {
-  if (document.getElementById(STYLE_ID)) return;
-  const style = document.createElement("style");
+export function ensureStyles(doc: Document = document): void {
+  if (doc.getElementById(STYLE_ID)) return;
+  const style = doc.createElement("style");
   style.id = STYLE_ID;
   style.textContent = `
     .word-menu {
@@ -128,5 +128,5 @@ export function ensureStyles(): void {
       background: #2a5f96;
     }
   `;
-  document.head.appendChild(style);
+  doc.head.appendChild(style);
 }
