@@ -4,7 +4,8 @@
     "module": "ES2022",
     "lib": ["DOM", "ES2020"],
     "strict": true,
+    "rootDir": "src",
     "outDir": "dist"
   },
-  "files": ["main.ts", "sentence.ts", "bulk-synonym.ts", "BookExtraction.ts", "bulk-run.ts", "word-frequency-table.ts", "epub.ts"]
+  "files": ["src/main.ts", "src/sentence.ts", "src/bulk-synonym.ts", "src/BookExtraction.ts", "src/bulk-run.ts", "src/word-frequency-table.ts", "src/epub.ts"]
 }
