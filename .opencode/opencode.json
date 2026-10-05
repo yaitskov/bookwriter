@@ -4,11 +4,13 @@
     "read": {
       "*": "allow",
       "**/word-frequency-table.ts": "deny",
+      "tmp/trash/*": "deny",
       "todo.org": "deny"
     },
     "bash": {
       "*": "allow",
       "*word-frequency-table*": "deny",
+      "tmp/trash/*": "deny",
       "*todo.org*": "deny"
     }
   }
