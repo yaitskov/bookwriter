@@ -1,3 +1,4 @@
+import { BLOCK_SELECTOR } from "./block-tags.js";
 import { createBulkSynonym, restoreIneligibleSynonyms } from "./bulk-synonym.js";
 import { runBulkSynonym } from "./bulk-run.js";
 import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
@@ -176,8 +177,9 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
       return;
     }
 
-    if (!(target instanceof HTMLParagraphElement)) return;
-    clicked = extractClickedWord(target);
+    const block = target.closest(BLOCK_SELECTOR);
+    if (!(block instanceof HTMLElement)) return;
+    clicked = extractClickedWord(block);
     event.preventDefault();
     unknownMenu.popup.show(mouseEvent.clientX, mouseEvent.clientY);
   });

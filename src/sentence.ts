@@ -1,24 +1,18 @@
-export function extractSentence(span: HTMLSpanElement): string {
-  const p = span.parentElement;
-  if (!(p instanceof HTMLParagraphElement)) return span.textContent ?? "";
+import { BLOCK_SELECTOR } from "./block-tags.js";
 
-  const full = p.textContent ?? "";
+export function extractSentence(span: HTMLSpanElement): string {
+  const block = span.closest(BLOCK_SELECTOR);
+  if (!block) return span.textContent ?? "";
+
+  const full = block.textContent ?? "";
   const isTerminator = (ch: string): boolean =>
     ch === "." || ch === "!" || ch === "?";
 
-  let offset = 0;
-  let spanStart = -1;
-  let spanEnd = -1;
-  for (const child of Array.from(p.childNodes)) {
-    const len = child.textContent?.length ?? 0;
-    if (child === span) {
-      spanStart = offset;
-      spanEnd = offset + len;
-      break;
-    }
-    offset += len;
-  }
-  if (spanStart === -1) return span.textContent ?? "";
+  const range = document.createRange();
+  range.setStart(block, 0);
+  range.setEnd(span, 0);
+  const spanStart = range.toString().length;
+  const spanEnd = spanStart + (span.textContent?.length ?? 0);
 
   let sentenceStart = 0;
   for (let i = spanStart - 1; i >= 0; i--) {

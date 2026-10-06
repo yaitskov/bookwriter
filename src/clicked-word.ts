@@ -5,7 +5,7 @@ export interface ClickedWord {
   end: number;
 }
 
-export function extractClickedWord(p: HTMLParagraphElement): ClickedWord {
+export function extractClickedWord(p: HTMLElement): ClickedWord {
   const selection = window.getSelection();
   if (selection && selection.rangeCount > 0) {
     const range = selection.getRangeAt(0).cloneRange();
