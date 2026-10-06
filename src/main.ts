@@ -69,16 +69,8 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
     doc,
   });
 
-  const { popup: unknownMenu, unknownItem, settingsItem: unknownSettingsItem, hideItem } =
-    createUnknownMenu(doc);
-
-  const {
-    popup: synonymMenu,
-    label: synonymLabel,
-    dictionaryItem,
-    rememberedItem,
-    settingsItem: synonymSettingsItem,
-  } = createSynonymMenu(doc);
+  const unknownMenu = createUnknownMenu(doc);
+  const synonymMenu = createSynonymMenu(doc);
 
   let clicked: ClickedWord = { word: "", node: null, start: 0, end: 0 };
   let synonymSpan: HTMLSpanElement | null = null;
@@ -99,9 +91,9 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
     }
   };
 
-  unknownItem.addEventListener("click", (event: MouseEvent) => {
+  unknownMenu.unknownItem.addEventListener("click", (event: MouseEvent) => {
     event.stopPropagation();
-    if (unknownMenu.isOpen()) {
+    if (unknownMenu.popup.isOpen()) {
       const { word, node } = clicked;
       console.log(word || null);
       if (node) {
@@ -121,7 +113,7 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
         }
       }
     }
-    unknownMenu.hide();
+    unknownMenu.popup.hide();
   });
 
   const openSettings = (menu: Popup, event: MouseEvent): void => {
@@ -130,38 +122,38 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
     settingsDialog.show();
   };
 
-  unknownSettingsItem.addEventListener("click", (event: MouseEvent) => {
-    openSettings(unknownMenu, event);
+  unknownMenu.settingsItem.addEventListener("click", (event: MouseEvent) => {
+    openSettings(unknownMenu.popup, event);
   });
 
-  synonymSettingsItem.addEventListener("click", (event: MouseEvent) => {
-    openSettings(synonymMenu, event);
+  synonymMenu.settingsItem.addEventListener("click", (event: MouseEvent) => {
+    openSettings(synonymMenu.popup, event);
   });
 
-  hideItem.addEventListener("click", (event: MouseEvent) => {
+  unknownMenu.hideItem.addEventListener("click", (event: MouseEvent) => {
     event.stopPropagation();
-    unknownMenu.hide();
+    unknownMenu.popup.hide();
   });
 
-  dictionaryItem.addEventListener("click", (event: MouseEvent) => {
+  synonymMenu.dictionaryItem.addEventListener("click", (event: MouseEvent) => {
     event.stopPropagation();
-    if (synonymMenu.isOpen() && synonymSpan) {
+    if (synonymMenu.popup.isOpen() && synonymSpan) {
       const word = synonymSpan.dataset.originWord ?? synonymSpan.textContent ?? "";
       window.open(`${CAMBRIDGE_BASE}${encodeURIComponent(word)}`, "_blank", "noopener");
     }
-    synonymMenu.hide();
+    synonymMenu.popup.hide();
   });
 
-  rememberedItem.addEventListener("click", (event: MouseEvent) => {
+  synonymMenu.rememberedItem.addEventListener("click", (event: MouseEvent) => {
     event.stopPropagation();
-    if (synonymMenu.isOpen() && synonymSpan) {
+    if (synonymMenu.popup.isOpen() && synonymSpan) {
       const word = synonymSpan.dataset.originWord ?? synonymSpan.textContent ?? "";
       const restored = restoreAllOccurrences(word, bookContent);
       unknown.remove(word);
       known.add(word);
       console.log(`[known] "${word}" restored ${restored} occurrence(s)`);
     }
-    synonymMenu.hide();
+    synonymMenu.popup.hide();
   });
 
   doc.addEventListener("click", onDocClick);
@@ -179,15 +171,15 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
     if (synonym instanceof HTMLSpanElement) {
       event.preventDefault();
       synonymSpan = synonym;
-      synonymLabel.textContent = synonym.dataset.originWord ?? synonym.textContent ?? "";
-      synonymMenu.show(mouseEvent.clientX, mouseEvent.clientY);
+      synonymMenu.label.textContent = synonym.dataset.originWord ?? synonym.textContent ?? "";
+      synonymMenu.popup.show(mouseEvent.clientX, mouseEvent.clientY);
       return;
     }
 
     if (!(target instanceof HTMLParagraphElement)) return;
     clicked = extractClickedWord(target);
     event.preventDefault();
-    unknownMenu.show(mouseEvent.clientX, mouseEvent.clientY);
+    unknownMenu.popup.show(mouseEvent.clientX, mouseEvent.clientY);
   });
 
   if (doc.readyState === "complete") {
