@@ -127,6 +127,54 @@ export function ensureStyles(doc: Document = document): void {
     .settings-dialog .settings-apply:hover:enabled {
       background: #2a5f96;
     }
+    .loading-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 10003;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.35);
+      font: 14px system-ui, sans-serif;
+    }
+    .loading-modal {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      min-width: 220px;
+      padding: 20px 24px;
+      background: #fff;
+      border: 1px solid #d0d0d0;
+      border-radius: 6px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      color: #222;
+    }
+    .loading-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #d0e0f0;
+      border-top-color: #2b6cb0;
+      border-radius: 50%;
+      animation: loading-spin 0.8s linear infinite;
+    }
+    @keyframes loading-spin {
+      to { transform: rotate(360deg); }
+    }
+    .loading-message {
+      margin: 0;
+    }
+    .loading-cancel {
+      padding: 6px 14px;
+      border: 1px solid #d0d0d0;
+      border-radius: 4px;
+      background: #fff;
+      cursor: pointer;
+      font: inherit;
+    }
+    .loading-cancel:hover {
+      background: #f0f0f0;
+    }
   `;
   doc.head.appendChild(style);
 }

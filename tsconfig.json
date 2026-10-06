@@ -7,5 +7,5 @@
     "rootDir": "src",
     "outDir": "dist"
   },
-  "files": ["src/main.ts", "src/sentence.ts", "src/bulk-synonym.ts", "src/BookExtraction.ts", "src/bulk-run.ts", "src/word-frequency-table.ts", "src/epub.ts", "src/book-loader.ts"]
+  "files": ["src/main.ts", "src/sentence.ts", "src/bulk-synonym.ts", "src/BookExtraction.ts", "src/bulk-run.ts", "src/word-frequency-table.ts", "src/epub.ts", "src/book-loader.ts", "src/loading-modal.ts"]
 }

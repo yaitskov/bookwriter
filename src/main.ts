@@ -1,7 +1,10 @@
+import { loadBookFile } from "./book-loader.js";
 import { createBulkSynonym, restoreIneligibleSynonyms } from "./bulk-synonym.js";
 import { runBulkSynonym } from "./bulk-run.js";
 import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
+import { createEpubItems, type EpubItem } from "./epub.js";
 import { createKnownWordDictionary } from "./known-word-dictionary.js";
+import { createLoadingModal } from "./loading-modal.js";
 import { popups, type Popup } from "./menu/popup.js";
 import { createSynonymMenu } from "./menu/synonym-menu.js";
 import { createUnknownMenu } from "./menu/unknown-menu.js";
@@ -17,12 +20,24 @@ import { applySynonym, restoreAllOccurrences, wrapWord } from "./word-span.js";
 const CAMBRIDGE_BASE = "https://dictionary.cambridge.org/dictionary/english/";
 const thesaurus = createThesaurus();
 
+class App {
+  public openBookBlob : Uint8Array;
+  public openBookItems : EpubItem[];
+  public openBookItemIndex : number;
+  constructor() {
+    this.openBookBlob = new Uint8Array(0);
+    this.openBookItems = [];
+    this.openBookItemIndex = 0;
+  }
+}
+
 function hideAll(): void {
   for (const popup of popups) popup.hide();
 }
 
 export function initApp(bookContent: HTMLDivElement, doc: Document = document): void {
   ensureStyles(doc);
+  const app = new App();
 
   const known = createKnownWordDictionary();
   const unknown = createUnknownWordDictionary();
@@ -69,6 +84,16 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
     doc,
   });
 
+  const loadNewBookBtn = doc.getElementById("load-new-book");
+  if (!loadNewBookBtn) return;
+
+  let loadToken = 0;
+  const cancelLoading = (): void => {
+    loadToken++;
+    loadingModal.hide();
+  };
+  const loadingModal = createLoadingModal({ doc, onCancel: cancelLoading });
+
   const unknownMenu = createUnknownMenu(doc);
   const synonymMenu = createSynonymMenu(doc);
 
@@ -77,6 +102,10 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
 
   const onKeydown = (event: KeyboardEvent): void => {
     if (event.key !== "Escape") return;
+    if (loadingModal.isOpen()) {
+      cancelLoading();
+      return;
+    }
     if (settingsDialog.isOpen()) {
       settingsDialog.hide();
       return;
@@ -90,6 +119,34 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
       if (popup.isOpen() && !popup.contains(target)) popup.hide();
     }
   };
+
+  const renderOpenBookItem = async (): Promise<void> => {
+    const item = app.openBookItems[app.openBookItemIndex];
+    if (!item) return;
+    bookContent.replaceChildren();
+    await item.render(bookContent.id);
+  };
+
+  loadNewBookBtn.addEventListener("click", () => {
+    void loadBookFile({ doc })
+      .then(async (bytes) => {
+        const token = ++loadToken;
+        loadingModal.show();
+        try {
+          const items = await createEpubItems(bytes);
+          if (token !== loadToken) return;
+          app.openBookBlob = bytes;
+          app.openBookItems = items;
+          app.openBookItemIndex = 0;
+          await renderOpenBookItem();
+        } finally {
+          if (token === loadToken) loadingModal.hide();
+        }
+      })
+      .catch((error) => {
+        console.error("failed to open book", error);
+      });
+  });
 
   unknownMenu.unknownItem.addEventListener("click", (event: MouseEvent) => {
     event.stopPropagation();
