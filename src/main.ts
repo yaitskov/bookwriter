@@ -86,6 +86,8 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
     doc,
   });
 
+  const c2welcome = doc.getElementById("c2-welcome");
+
   const loadNewBookBtn = doc.getElementById("load-new-book");
   if (!loadNewBookBtn) return;
 
@@ -151,6 +153,8 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
           app.openBookItemIndex = 0;
           await renderOpenBookItem();
           app.openBookItemRendered = 0;
+          if (c2welcome) c2welcome.style.display = "none";
+
         } finally {
           if (token === loadToken) loadingModal.hide();
         }
