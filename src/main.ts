@@ -2,7 +2,8 @@ import { createBulkSynonym, restoreIneligibleSynonyms } from "./bulk-synonym.js"
 import { runBulkSynonym } from "./bulk-run.js";
 import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
 import { createKnownWordDictionary } from "./known-word-dictionary.js";
-import { createPopup, popups, type Popup } from "./menu/popup.js";
+import { popups, type Popup } from "./menu/popup.js";
+import { createSynonymMenu } from "./menu/synonym-menu.js";
 import { createUnknownMenu } from "./menu/unknown-menu.js";
 import { createUserSettings } from "./settings.js";
 import { createSettingsDialog } from "./settings-dialog.js";
@@ -71,24 +72,13 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
   const { popup: unknownMenu, unknownItem, settingsItem: unknownSettingsItem, hideItem } =
     createUnknownMenu(doc);
 
-  const synonymMenu = createPopup(doc, "synonym-menu");
-  const synonymLabel = doc.createElement("div");
-  synonymLabel.className = "menu-label";
-  const dictionaryItem = doc.createElement("button");
-  dictionaryItem.type = "button";
-  dictionaryItem.textContent = "Open Cambridge Dictionary";
-  const rememberedItem = doc.createElement("button");
-  rememberedItem.type = "button";
-  rememberedItem.textContent = "I remembered";
-  const synonymSettingsItem = doc.createElement("button");
-  synonymSettingsItem.type = "button";
-  synonymSettingsItem.textContent = "Settings…";
-  synonymMenu.element.append(
-    synonymLabel,
+  const {
+    popup: synonymMenu,
+    label: synonymLabel,
     dictionaryItem,
     rememberedItem,
-    synonymSettingsItem,
-  );
+    settingsItem: synonymSettingsItem,
+  } = createSynonymMenu(doc);
 
   let clicked: ClickedWord = { word: "", node: null, start: 0, end: 0 };
   let synonymSpan: HTMLSpanElement | null = null;
