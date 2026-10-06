@@ -24,10 +24,12 @@ class App {
   public openBookBlob : Uint8Array;
   public openBookItems : EpubItem[];
   public openBookItemIndex : number;
+  public openBookItemRendered : number;
   constructor() {
     this.openBookBlob = new Uint8Array(0);
     this.openBookItems = [];
-    this.openBookItemIndex = 0;
+    this.openBookItemIndex = -1;
+    this.openBookItemRendered = -1;
   }
 }
 
@@ -133,12 +135,22 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
         const token = ++loadToken;
         loadingModal.show();
         try {
+          if (app.openBookItemRendered > 0) {
+            const previousItem = app.openBookItems[app.openBookItemRendered];
+            if (previousItem) {
+              previousItem.cleanup('#book-content');
+            }
+            app.openBookBlob = new Uint8Array(0);
+            app.openBookItemRendered = -1;
+            app.openBookItems = [];
+          }
           const items = await createEpubItems(bytes);
           if (token !== loadToken) return;
           app.openBookBlob = bytes;
           app.openBookItems = items;
           app.openBookItemIndex = 0;
           await renderOpenBookItem();
+          app.openBookItemRendered = 0;
         } finally {
           if (token === loadToken) loadingModal.hide();
         }
