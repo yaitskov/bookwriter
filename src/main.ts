@@ -1,4 +1,3 @@
-import { BLOCK_SELECTOR } from "./block-tags.js";
 import { createBulkSynonym, restoreIneligibleSynonyms } from "./bulk-synonym.js";
 import { runBulkSynonym } from "./bulk-run.js";
 import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
@@ -8,7 +7,7 @@ import { createSynonymMenu } from "./menu/synonym-menu.js";
 import { createUnknownMenu } from "./menu/unknown-menu.js";
 import { createUserSettings } from "./settings.js";
 import { createSettingsDialog } from "./settings-dialog.js";
-import { extractSentence } from "./sentence.js";
+import { BLOCK_SELECTOR, extractSentence } from "./sentence.js";
 import { ensureStyles } from "./style.js";
 import { createThesaurus } from "./thesaurus.js";
 import { createUnknownWordDictionary } from "./unknown-word-dictionary.js";

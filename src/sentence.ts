@@ -1,4 +1,4 @@
-import { BLOCK_SELECTOR } from "./block-tags.js";
+export const BLOCK_SELECTOR = "p,h1,h2,h3,h4,h5,h6,li,td,th,blockquote";
 
 export function extractSentence(span: HTMLSpanElement): string {
   const block = span.closest(BLOCK_SELECTOR);
