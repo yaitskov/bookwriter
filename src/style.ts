@@ -175,6 +175,36 @@ export function ensureStyles(doc: Document = document): void {
     .loading-cancel:hover {
       background: #f0f0f0;
     }
+    .book-nav {
+      position: fixed;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 9000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font: 14px system-ui, sans-serif;
+    }
+    .book-nav button {
+      width: 40px;
+      height: 40px;
+      border: 1px solid #d0d0d0;
+      border-radius: 4px;
+      background: #fff;
+      color: #222;
+      cursor: pointer;
+      font: inherit;
+      font-size: 18px;
+      line-height: 1;
+    }
+    .book-nav button:hover:enabled {
+      background: #f0f0f0;
+    }
+    .book-nav button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
   `;
   doc.head.appendChild(style);
 }

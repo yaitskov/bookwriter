@@ -5,6 +5,7 @@ import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
 import { createEpubItems, type EpubItem } from "./epub.js";
 import { createKnownWordDictionary } from "./known-word-dictionary.js";
 import { createLoadingModal } from "./loading-modal.js";
+import { createNavMenu } from "./nav-menu.js";
 import { popups, type Popup } from "./menu/popup.js";
 import { createSynonymMenu } from "./menu/synonym-menu.js";
 import { createUnknownMenu } from "./menu/unknown-menu.js";
@@ -100,6 +101,7 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
 
   const unknownMenu = createUnknownMenu(doc);
   const synonymMenu = createSynonymMenu(doc);
+  const navMenu = createNavMenu(doc);
 
   let clicked: ClickedWord = { word: "", node: null, start: 0, end: 0 };
   let synonymSpan: HTMLSpanElement | null = null;
@@ -131,13 +133,41 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
     await item.render(bookContent.id);
   };
 
+  const updateNavMenu = (): void => {
+    navMenu.previousButton.disabled = app.openBookItemIndex <= 0;
+    navMenu.nextButton.disabled =
+      app.openBookItemIndex < 0 || app.openBookItemIndex >= app.openBookItems.length - 1;
+  };
+
+  const goToBookItem = async (index: number): Promise<void> => {
+    if (index < 0 || index >= app.openBookItems.length) return;
+    if (index === app.openBookItemRendered) return;
+    app.openBookItems[app.openBookItemRendered]?.cleanup(bookContent.id);
+    app.openBookItemIndex = index;
+    await renderOpenBookItem();
+    app.openBookItemRendered = index;
+    updateNavMenu();
+  };
+
+  navMenu.previousButton.addEventListener("click", () => {
+    void goToBookItem(app.openBookItemIndex - 1).catch((error) =>
+      console.error("navigation failed", error),
+    );
+  });
+
+  navMenu.nextButton.addEventListener("click", () => {
+    void goToBookItem(app.openBookItemIndex + 1).catch((error) =>
+      console.error("navigation failed", error),
+    );
+  });
+
   loadNewBookBtn.addEventListener("click", () => {
     void loadBookFile({ doc })
       .then(async (bytes) => {
         const token = ++loadToken;
         loadingModal.show();
         try {
-          if (app.openBookItemRendered > 0) {
+          if (app.openBookItemRendered >= 0) {
             const previousItem = app.openBookItems[app.openBookItemRendered];
             if (previousItem) {
               previousItem.cleanup('#book-content');
@@ -153,6 +183,7 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
           app.openBookItemIndex = 0;
           await renderOpenBookItem();
           app.openBookItemRendered = 0;
+          updateNavMenu();
           if (c2welcome) c2welcome.style.display = "none";
 
         } finally {
