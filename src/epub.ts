@@ -308,13 +308,25 @@ async function findPackagePath(epub: OpenEpub): Promise<string> {
   throw new Error("no package document (.opf) found");
 }
 
-function createEpubItem(id: string, href: string, title: string, epub: OpenEpub): EpubItem {
+function createEpubItem(
+  id: string,
+  href: string,
+  title: string,
+  epub: OpenEpub,
+  mediaByPath: Map<string, MediaFile>,
+): EpubItem {
   let styles: HTMLStyleElement[] = [];
+  let objectUrls: string[] = [];
   let renderedRootId: string | null = null;
 
   const removeStyles = (): void => {
     for (const style of styles) style.remove();
     styles = [];
+  };
+
+  const revokeObjectUrls = (): void => {
+    for (const url of objectUrls) window.URL.revokeObjectURL(url);
+    objectUrls = [];
   };
 
   const inlineStyles = async (document_: Document): Promise<void> => {
@@ -341,12 +353,51 @@ function createEpubItem(id: string, href: string, title: string, epub: OpenEpub)
     }
   };
 
+  const applyImageUrl = (
+    base: string,
+    reference: string,
+    setUrl: (url: string) => void,
+  ): void => {
+    if (isExternalReference(reference)) return;
+    const target = resolvePath(base, reference);
+    const media = mediaByPath.get(target);
+    if (!media) {
+      console.warn(`[epub] skipping image "${reference}" in "${href}": no matching media`);
+      return;
+    }
+    const url = window.URL.createObjectURL(
+      new Blob([media.content as BlobPart], { type: mimeForImage(target) }),
+    );
+    objectUrls.push(url);
+    setUrl(url);
+  };
+
+  const inlineImages = (document_: Document): void => {
+    const base = directoryOf(dropTopFolder(href));
+    for (const image of findAll(document_, "img")) {
+      const reference = image.getAttribute("src");
+      if (reference) applyImageUrl(base, reference, (url) => image.setAttribute("src", url));
+    }
+    for (const image of findAll(document_, "image")) {
+      const xlink = image.getAttributeNS("http://www.w3.org/1999/xlink", "href");
+      if (xlink !== null) {
+        applyImageUrl(base, xlink, (url) =>
+          image.setAttributeNS("http://www.w3.org/1999/xlink", "href", url));
+        continue;
+      }
+      const plain = image.getAttribute("href");
+      if (plain) applyImageUrl(base, plain, (url) => image.setAttribute("href", url));
+    }
+  };
+
   const render = async (rootId: string): Promise<void> => {
     const root = document.getElementById(rootId);
     if (!root) throw new Error(`no element with id "${rootId}"`);
     removeStyles();
+    revokeObjectUrls();
     const document_ = await epub.readDocument(href);
     await inlineStyles(document_);
+    inlineImages(document_);
     root.replaceChildren();
     for (const child of Array.from(document_.body?.childNodes ?? [])) {
       root.appendChild(document.importNode(child, true));
@@ -355,6 +406,7 @@ function createEpubItem(id: string, href: string, title: string, epub: OpenEpub)
   };
 
   const cleanup = (rootId: string): void => {
+    revokeObjectUrls();
     if (styles.length > 0) {
       removeStyles();
     } else {
@@ -372,6 +424,29 @@ function createEpubItem(id: string, href: string, title: string, epub: OpenEpub)
 function isImageEntry(name: string): boolean {
   const lower = name.toLowerCase();
   return IMAGE_EXTENSIONS.some((extension) => lower.endsWith(extension));
+}
+
+const IMAGE_MIME_TYPES: { [extension: string]: string } = {
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".gif": "image/gif",
+  ".svg": "image/svg+xml",
+  ".webp": "image/webp",
+};
+
+function mimeForImage(path: string): string {
+  const lower = path.toLowerCase();
+  for (const [extension, type] of Object.entries(IMAGE_MIME_TYPES)) {
+    if (lower.endsWith(extension)) return type;
+  }
+  return "application/octet-stream";
+}
+
+function isExternalReference(reference: string): boolean {
+  return /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(reference)
+    || reference.startsWith("//")
+    || reference.startsWith("#");
 }
 
 const DOCUMENT_ROOT_FOLDERS = ["epub", "oebps"];
@@ -405,6 +480,13 @@ export async function parseEpubBook(content: Uint8Array): Promise<EpubBook> {
 
   const titles = await readTitles(epub, manifest, opf, directory);
 
+  const media = await Promise.all(
+    Array.from(epub.entries.keys())
+      .filter(isImageEntry)
+      .map(async (name) => ({ pathRelativeToDocument: dropTopFolder(name), content: await epub.read(name) })),
+  );
+  const mediaByPath = new Map(media.map((file) => [file.pathRelativeToDocument, file]));
+
   const spine = findFirst(opf, "spine");
   const items: EpubItem[] = [];
   for (const itemref of findAll(spine ?? opf, "itemref")) {
@@ -412,16 +494,10 @@ export async function parseEpubBook(content: Uint8Array): Promise<EpubBook> {
     if (!idref) continue;
     const item = manifest.get(idref);
     if (!item) continue;
-    items.push(createEpubItem(idref, item.path, titles.get(item.path) ?? "", epub));
+    items.push(createEpubItem(idref, item.path, titles.get(item.path) ?? "", epub, mediaByPath));
   }
 
   if (items.length === 0) throw new Error(`no spine items in "${packagePath}"`);
-
-  const media = await Promise.all(
-    Array.from(epub.entries.keys())
-      .filter(isImageEntry)
-      .map(async (name) => ({ pathRelativeToDocument: dropTopFolder(name), content: await epub.read(name) })),
-  );
 
   return { items, media };
 }
