@@ -20,7 +20,7 @@ export interface EpubItem {
 }
 
 export interface MediaFile {
-  readonly nameRelativeToZipRoot: string;
+  readonly pathRelativeToDocument: string;
   readonly content: Uint8Array;
 }
 
@@ -374,6 +374,17 @@ function isImageEntry(name: string): boolean {
   return IMAGE_EXTENSIONS.some((extension) => lower.endsWith(extension));
 }
 
+const DOCUMENT_ROOT_FOLDERS = ["epub", "oebps"];
+
+function dropTopFolder(path: string): string {
+  const slash = path.indexOf("/");
+  if (slash < 0) return path;
+  const top = path.slice(0, slash);
+  return top === ".." || DOCUMENT_ROOT_FOLDERS.includes(top.toLowerCase())
+    ? path.slice(slash + 1)
+    : path;
+}
+
 export async function createEpubItems(content: Uint8Array): Promise<EpubBook> {
   const epub = openEpub(content);
   const packagePath = await findPackagePath(epub);
@@ -409,7 +420,7 @@ export async function createEpubItems(content: Uint8Array): Promise<EpubBook> {
   const media = await Promise.all(
     Array.from(epub.entries.keys())
       .filter(isImageEntry)
-      .map(async (name) => ({ nameRelativeToZipRoot: name, content: await epub.read(name) })),
+      .map(async (name) => ({ pathRelativeToDocument: dropTopFolder(name), content: await epub.read(name) })),
   );
 
   return { items, media };
