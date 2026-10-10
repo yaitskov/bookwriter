@@ -15,3 +15,20 @@ export function deepMap(
   }
   return object;
 }
+
+export function deepTraverse(object: unknown, propertyName: string): string[] {
+  const values: string[] = [];
+  if (Array.isArray(object)) {
+    for (const element of object) values.push(...deepTraverse(element, propertyName));
+    return values;
+  }
+  if (object === null || typeof object !== "object") return values;
+  const record = object as { [key: string]: unknown };
+  for (const key of Object.keys(record)) {
+    const value = record[key];
+    if (key === propertyName && typeof value === "string") values.push(value);
+    values.push(...deepTraverse(value, propertyName));
+  }
+  return values;
+}
+
