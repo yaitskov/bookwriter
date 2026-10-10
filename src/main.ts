@@ -38,7 +38,7 @@ function hideAll(): void {
   for (const popup of popups) popup.hide();
 }
 
-export function initApp(bookContent: HTMLDivElement, doc: Document = document): void {
+export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document): void {
   ensureStyles(doc);
   const app = new App();
 
@@ -56,7 +56,7 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
       return;
     }
     bulkRunning = true;
-    void runBulkSynonym({ bulk, known, unknown, settings, root: bookContent }).finally(() => {
+    void runBulkSynonym({ bulk, known, unknown, settings, root: bookItemOutput }).finally(() => {
       bulkRunning = false;
     });
   };
@@ -129,8 +129,8 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
   const renderOpenBookItem = async (): Promise<void> => {
     const item = app.openBook.items[app.openBookItemIndex];
     if (!item) return;
-    bookContent.replaceChildren();
-    await item.render(bookContent.id);
+    bookItemOutput.replaceChildren();
+    await item.render(bookItemOutput.id);
   };
 
   const updateNavMenu = (): void => {
@@ -142,7 +142,7 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
   const goToBookItem = async (index: number): Promise<void> => {
     if (index < 0 || index >= app.openBook.items.length) return;
     if (index === app.openBookItemRendered) return;
-    app.openBook.items[app.openBookItemRendered]?.cleanup(bookContent.id);
+    app.openBook.items[app.openBookItemRendered]?.cleanup(bookItemOutput.id);
     app.openBookItemIndex = index;
     await renderOpenBookItem();
     app.openBookItemRendered = index;
@@ -252,7 +252,7 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
     event.stopPropagation();
     if (synonymMenu.popup.isOpen() && synonymSpan) {
       const word = synonymSpan.dataset.originWord ?? synonymSpan.textContent ?? "";
-      const restored = restoreAllOccurrences(word, bookContent);
+      const restored = restoreAllOccurrences(word, bookItemOutput);
       unknown.remove(word);
       known.add(word);
       console.log(`[known] "${word}" restored ${restored} occurrence(s)`);
