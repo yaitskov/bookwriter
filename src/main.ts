@@ -28,7 +28,7 @@ class App {
   public openBookItemRendered : number;
   constructor() {
     this.openBookBlob = new Uint8Array(0);
-    this.openBook = { items: [], media: [] };
+    this.openBook = { items: [], media: [], fonts: [] };
     this.openBookItemIndex = -1;
     this.openBookItemRendered = -1;
   }
@@ -174,7 +174,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
             }
             app.openBookBlob = new Uint8Array(0);
             app.openBookItemRendered = -1;
-            app.openBook = { items: [], media: [] };
+            app.openBook = { items: [], media: [], fonts: [] };
           }
           const book = await parseEpubBook(bytes);
           if (token !== loadToken) return;

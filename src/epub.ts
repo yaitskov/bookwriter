@@ -10,6 +10,7 @@ const DEFLATED = 8;
 const CONTAINER_PATH = "META-INF/container.xml";
 const TEXT_DECODER = new TextDecoder("utf-8");
 const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif"];
+const FONT_EXTENSIONS = [".ttf", ".otf", ".woff", ".woff2", ".eot"];
 
 export interface EpubItem {
   readonly id: string;
@@ -24,9 +25,15 @@ export interface MediaFile {
   readonly content: Uint8Array;
 }
 
+export interface FontName {
+  readonly name: string;
+  blob: Uint8Array;
+}
+
 export interface EpubBook {
   readonly items: EpubItem[];
   readonly media: MediaFile[];
+  readonly fonts: FontName[];
 }
 
 interface ZipEntry {
@@ -426,6 +433,11 @@ function isImageEntry(name: string): boolean {
   return IMAGE_EXTENSIONS.some((extension) => lower.endsWith(extension));
 }
 
+function isFontEntry(name: string): boolean {
+  const lower = name.toLowerCase();
+  return FONT_EXTENSIONS.some((extension) => lower.endsWith(extension));
+}
+
 const IMAGE_MIME_TYPES: { [extension: string]: string } = {
   ".png": "image/png",
   ".jpg": "image/jpeg",
@@ -487,6 +499,12 @@ export async function parseEpubBook(content: Uint8Array): Promise<EpubBook> {
   );
   const mediaByPath = new Map(media.map((file) => [file.pathRelativeToDocument, file]));
 
+  const fonts = await Promise.all(
+    Array.from(epub.entries.keys())
+      .filter(isFontEntry)
+      .map(async (name) => ({ name: dropTopFolder(name), blob: await epub.read(name) })),
+  );
+
   const spine = findFirst(opf, "spine");
   const items: EpubItem[] = [];
   for (const itemref of findAll(spine ?? opf, "itemref")) {
@@ -499,5 +517,5 @@ export async function parseEpubBook(content: Uint8Array): Promise<EpubBook> {
 
   if (items.length === 0) throw new Error(`no spine items in "${packagePath}"`);
 
-  return { items, media };
+  return { items, media, fonts };
 }
