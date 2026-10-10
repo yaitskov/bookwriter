@@ -8,5 +8,8 @@
   "devDependencies": {
     "serve": "^14.2.4",
     "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "@node-projects/css-parser": "^5.2.0"
   }
 }

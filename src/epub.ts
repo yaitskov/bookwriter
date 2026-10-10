@@ -1,3 +1,5 @@
+import { parse, stringify } from "@node-projects/css-parser";
+
 const END_OF_CENTRAL_DIRECTORY = 0x06054b50;
 const ZIP64_LOCATOR = 0x07064b50;
 const ZIP64_END_OF_CENTRAL_DIRECTORY = 0x06064b50;
@@ -354,7 +356,14 @@ function createEpubItem(
       }
       const style = document.createElement("style");
       style.dataset.epubItem = id;
-      style.textContent = css;
+      try {
+        const ast = parse(css);
+        style.textContent = stringify(ast);
+        // console.log(`[epub] parsed CSS "${path}"`, ast);
+      } catch (error) {
+        console.warn(`[epub] failed to parse/rewrite CSS "${path}": ${String(error)}`);
+        style.textContent = css;
+      }
       document.head.appendChild(style);
       styles.push(style);
     }
