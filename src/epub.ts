@@ -9,6 +9,7 @@ const STORED = 0;
 const DEFLATED = 8;
 const CONTAINER_PATH = "META-INF/container.xml";
 const TEXT_DECODER = new TextDecoder("utf-8");
+const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif"];
 
 export interface EpubItem {
   readonly id: string;
@@ -16,6 +17,16 @@ export interface EpubItem {
   readonly title: string;
   render(rootId: string): Promise<void>;
   cleanup(rootId: string): void;
+}
+
+export interface MediaFile {
+  readonly nameRelativeToZipRoot: string;
+  readonly content: Uint8Array;
+}
+
+export interface EpubBook {
+  readonly items: EpubItem[];
+  readonly media: MediaFile[];
 }
 
 interface ZipEntry {
@@ -358,7 +369,12 @@ function createEpubItem(id: string, href: string, title: string, epub: OpenEpub)
   return { id, href, title, render, cleanup };
 }
 
-export async function createEpubItems(content: Uint8Array): Promise<EpubItem[]> {
+function isImageEntry(name: string): boolean {
+  const lower = name.toLowerCase();
+  return IMAGE_EXTENSIONS.some((extension) => lower.endsWith(extension));
+}
+
+export async function createEpubItems(content: Uint8Array): Promise<EpubBook> {
   const epub = openEpub(content);
   const packagePath = await findPackagePath(epub);
   const directory = directoryOf(packagePath);
@@ -389,5 +405,12 @@ export async function createEpubItems(content: Uint8Array): Promise<EpubItem[]> 
   }
 
   if (items.length === 0) throw new Error(`no spine items in "${packagePath}"`);
-  return items;
+
+  const media = await Promise.all(
+    Array.from(epub.entries.keys())
+      .filter(isImageEntry)
+      .map(async (name) => ({ nameRelativeToZipRoot: name, content: await epub.read(name) })),
+  );
+
+  return { items, media };
 }

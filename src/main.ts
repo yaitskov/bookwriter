@@ -2,7 +2,7 @@ import { loadBookFile } from "./book-loader.js";
 import { createBulkSynonym, restoreIneligibleSynonyms } from "./bulk-synonym.js";
 import { runBulkSynonym } from "./bulk-run.js";
 import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
-import { createEpubItems, type EpubItem } from "./epub.js";
+import { createEpubItems, type EpubBook } from "./epub.js";
 import { createKnownWordDictionary } from "./known-word-dictionary.js";
 import { createLoadingModal } from "./loading-modal.js";
 import { createNavMenu } from "./nav-menu.js";
@@ -23,12 +23,12 @@ const thesaurus = createThesaurus();
 
 class App {
   public openBookBlob : Uint8Array;
-  public openBookItems : EpubItem[];
+  public openBook : EpubBook;
   public openBookItemIndex : number;
   public openBookItemRendered : number;
   constructor() {
     this.openBookBlob = new Uint8Array(0);
-    this.openBookItems = [];
+    this.openBook = { items: [], media: [] };
     this.openBookItemIndex = -1;
     this.openBookItemRendered = -1;
   }
@@ -127,7 +127,7 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
   };
 
   const renderOpenBookItem = async (): Promise<void> => {
-    const item = app.openBookItems[app.openBookItemIndex];
+    const item = app.openBook.items[app.openBookItemIndex];
     if (!item) return;
     bookContent.replaceChildren();
     await item.render(bookContent.id);
@@ -136,13 +136,13 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
   const updateNavMenu = (): void => {
     navMenu.previousButton.disabled = app.openBookItemIndex <= 0;
     navMenu.nextButton.disabled =
-      app.openBookItemIndex < 0 || app.openBookItemIndex >= app.openBookItems.length - 1;
+      app.openBookItemIndex < 0 || app.openBookItemIndex >= app.openBook.items.length - 1;
   };
 
   const goToBookItem = async (index: number): Promise<void> => {
-    if (index < 0 || index >= app.openBookItems.length) return;
+    if (index < 0 || index >= app.openBook.items.length) return;
     if (index === app.openBookItemRendered) return;
-    app.openBookItems[app.openBookItemRendered]?.cleanup(bookContent.id);
+    app.openBook.items[app.openBookItemRendered]?.cleanup(bookContent.id);
     app.openBookItemIndex = index;
     await renderOpenBookItem();
     app.openBookItemRendered = index;
@@ -168,18 +168,18 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
         loadingModal.show();
         try {
           if (app.openBookItemRendered >= 0) {
-            const previousItem = app.openBookItems[app.openBookItemRendered];
+            const previousItem = app.openBook.items[app.openBookItemRendered];
             if (previousItem) {
               previousItem.cleanup('#book-content');
             }
             app.openBookBlob = new Uint8Array(0);
             app.openBookItemRendered = -1;
-            app.openBookItems = [];
+            app.openBook = { items: [], media: [] };
           }
-          const items = await createEpubItems(bytes);
+          const book = await createEpubItems(bytes);
           if (token !== loadToken) return;
           app.openBookBlob = bytes;
-          app.openBookItems = items;
+          app.openBook = book;
           app.openBookItemIndex = 0;
           await renderOpenBookItem();
           app.openBookItemRendered = 0;
