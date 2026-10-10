@@ -385,7 +385,7 @@ function dropTopFolder(path: string): string {
     : path;
 }
 
-export async function createEpubItems(content: Uint8Array): Promise<EpubBook> {
+export async function parseEpubBook(content: Uint8Array): Promise<EpubBook> {
   const epub = openEpub(content);
   const packagePath = await findPackagePath(epub);
   const directory = directoryOf(packagePath);

@@ -2,7 +2,7 @@ import { loadBookFile } from "./book-loader.js";
 import { createBulkSynonym, restoreIneligibleSynonyms } from "./bulk-synonym.js";
 import { runBulkSynonym } from "./bulk-run.js";
 import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
-import { createEpubItems, type EpubBook } from "./epub.js";
+import { parseEpubBook, type EpubBook } from "./epub.js";
 import { createKnownWordDictionary } from "./known-word-dictionary.js";
 import { createLoadingModal } from "./loading-modal.js";
 import { createNavMenu } from "./nav-menu.js";
@@ -176,7 +176,7 @@ export function initApp(bookContent: HTMLDivElement, doc: Document = document): 
             app.openBookItemRendered = -1;
             app.openBook = { items: [], media: [] };
           }
-          const book = await createEpubItems(bytes);
+          const book = await parseEpubBook(bytes);
           if (token !== loadToken) return;
           app.openBookBlob = bytes;
           app.openBook = book;
