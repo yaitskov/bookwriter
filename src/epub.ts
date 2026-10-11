@@ -1,4 +1,6 @@
 import { parse, stringify } from "@node-projects/css-parser";
+import { deepMap } from "./TreeObject.js";
+import { replaceUrls } from "./css.js";
 
 const END_OF_CENTRAL_DIRECTORY = 0x06054b50;
 const ZIP64_LOCATOR = 0x07064b50;
@@ -323,6 +325,7 @@ function createEpubItem(
   title: string,
   epub: OpenEpub,
   mediaByPath: Map<string, MediaFile>,
+  fontByName: Map<string, FontName>,
 ): EpubItem {
   let styles: HTMLStyleElement[] = [];
   let objectUrls: string[] = [];
@@ -358,8 +361,22 @@ function createEpubItem(
       style.dataset.epubItem = id;
       try {
         const ast = parse(css);
+        const fontBase = directoryOf(dropTopFolder(path));
+        deepMap("src", (value) => {
+          if (typeof value !== "string") return value;
+          return replaceUrls(value, (url) => {
+            if (isExternalReference(url)) return null;
+            const target = resolvePath(fontBase, url);
+            const font = fontByName.get(target);
+            if (!font) return null;
+            const objectUrl = window.URL.createObjectURL(
+              new Blob([font.blob as BlobPart], { type: mimeForFont(target) }),
+            );
+            objectUrls.push(objectUrl);
+            return objectUrl;
+          });
+        }, ast);
         style.textContent = stringify(ast);
-        // console.log(`[epub] parsed CSS "${path}"`, ast);
       } catch (error) {
         console.warn(`[epub] failed to parse/rewrite CSS "${path}": ${String(error)}`);
         style.textContent = css;
@@ -464,6 +481,22 @@ function mimeForImage(path: string): string {
   return "application/octet-stream";
 }
 
+const FONT_MIME_TYPES: { [extension: string]: string } = {
+  ".ttf": "font/ttf",
+  ".otf": "font/otf",
+  ".woff": "font/woff",
+  ".woff2": "font/woff2",
+  ".eot": "application/vnd.ms-fontobject",
+};
+
+function mimeForFont(path: string): string {
+  const lower = path.toLowerCase();
+  for (const [extension, type] of Object.entries(FONT_MIME_TYPES)) {
+    if (lower.endsWith(extension)) return type;
+  }
+  return "application/octet-stream";
+}
+
 function isExternalReference(reference: string): boolean {
   return /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(reference)
     || reference.startsWith("//")
@@ -513,6 +546,7 @@ export async function parseEpubBook(content: Uint8Array): Promise<EpubBook> {
       .filter(isFontEntry)
       .map(async (name) => ({ name: dropTopFolder(name), blob: await epub.read(name) })),
   );
+  const fontByName = new Map(fonts.map((font) => [font.name, font]));
 
   const spine = findFirst(opf, "spine");
   const items: EpubItem[] = [];
@@ -521,7 +555,7 @@ export async function parseEpubBook(content: Uint8Array): Promise<EpubBook> {
     if (!idref) continue;
     const item = manifest.get(idref);
     if (!item) continue;
-    items.push(createEpubItem(idref, item.path, titles.get(item.path) ?? "", epub, mediaByPath));
+    items.push(createEpubItem(idref, item.path, titles.get(item.path) ?? "", epub, mediaByPath, fontByName));
   }
 
   if (items.length === 0) throw new Error(`no spine items in "${packagePath}"`);

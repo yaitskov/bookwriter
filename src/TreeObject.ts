@@ -9,8 +9,10 @@ export function deepMap(
   }
   if (object === null || typeof object !== "object") return object;
   const record = object as { [key: string]: unknown };
+  if (record.property && record.property == propertyName && record.value && typeof record.value === "string") {
+    record.value = fn(record.value);
+  }
   for (const key of Object.keys(record)) {
-    if (key === propertyName) record[key] = fn(record[key]);
     deepMap(propertyName, fn, record[key]);
   }
   return object;
@@ -24,11 +26,12 @@ export function deepTraverse(object: unknown, propertyName: string): string[] {
   }
   if (object === null || typeof object !== "object") return values;
   const record = object as { [key: string]: unknown };
+  if (record.property && record.property == propertyName && record.value && typeof record.value === "string") {
+    values.push(record.value);
+  }
   for (const key of Object.keys(record)) {
     const value = record[key];
-    if (key === propertyName && typeof value === "string") values.push(value);
     values.push(...deepTraverse(value, propertyName));
   }
   return values;
 }
-
