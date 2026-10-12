@@ -143,6 +143,12 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
       hideAll();
       return;
     }
+    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+      if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
+      event.preventDefault();
+      navigateRelative(event.key === "ArrowLeft" ? -1 : 1);
+      return;
+    }
     if (event.ctrlKey || event.metaKey || event.altKey) return;
     if (event.key.toLowerCase() !== "c") return;
     if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
@@ -168,9 +174,9 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
   };
 
   const updateNavMenu = (): void => {
-    navMenu.previousButton.disabled = app.openBookItemIndex <= 0;
-    navMenu.nextButton.disabled =
-      app.openBookItemIndex < 0 || app.openBookItemIndex >= app.openBook.items.length - 1;
+    const hasBook = app.openBook.items.length > 0 && app.openBookItemIndex >= 0;
+    navMenu.previousButton.disabled = !hasBook;
+    navMenu.nextButton.disabled = !hasBook;
   };
 
   const scrollToAnchor = (anchor: string): void => {
@@ -204,16 +210,21 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     else window.scrollTo(0, 0);
   };
 
-  navMenu.previousButton.addEventListener("click", () => {
-    void goToBookItem(app.openBookItemIndex - 1).catch((error) =>
+  const navigateRelative = (delta: number): void => {
+    const count = app.openBook.items.length;
+    if (count === 0 || app.openBookItemIndex < 0) return;
+    const index = (app.openBookItemIndex + delta + count) % count;
+    void goToBookItem(index).catch((error) =>
       console.error("navigation failed", error),
     );
+  };
+
+  navMenu.previousButton.addEventListener("click", () => {
+    navigateRelative(-1);
   });
 
   navMenu.nextButton.addEventListener("click", () => {
-    void goToBookItem(app.openBookItemIndex + 1).catch((error) =>
-      console.error("navigation failed", error),
-    );
+    navigateRelative(1);
   });
 
   loadNewBookBtn.addEventListener("click", () => {
