@@ -121,7 +121,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     if (target.kind === "external") {
       window.open(target.url, "_blank", "noopener");
     } else if (target.kind === "local") {
-      void goToBookItem(target.index).catch((error) =>
+      void goToBookItem(target.index, target.anchor).catch((error) =>
         console.error("failed to follow link", error),
       );
     } else {
@@ -163,14 +163,35 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
       app.openBookItemIndex < 0 || app.openBookItemIndex >= app.openBook.items.length - 1;
   };
 
-  const goToBookItem = async (index: number): Promise<void> => {
+  const scrollToAnchor = (anchor: string): void => {
+    const byId = doc.getElementById(anchor);
+    const target =
+      byId && bookItemOutput.contains(byId)
+        ? byId
+        : Array.from(bookItemOutput.querySelectorAll<HTMLAnchorElement>("a[name]")).find(
+            (a) => a.getAttribute("name") === anchor,
+          );
+    if (target) {
+      target.scrollIntoView();
+    } else {
+      console.warn(`[link] anchor "#${anchor}" not found`);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const goToBookItem = async (index: number, anchor?: string): Promise<void> => {
     if (index < 0 || index >= app.openBook.items.length) return;
-    if (index === app.openBookItemRendered) return;
+    if (index === app.openBookItemRendered) {
+      if (anchor) scrollToAnchor(anchor);
+      return;
+    }
     app.openBook.items[app.openBookItemRendered]?.cleanup(bookItemOutput.id);
     app.openBookItemIndex = index;
     await renderOpenBookItem();
     app.openBookItemRendered = index;
     updateNavMenu();
+    if (anchor) scrollToAnchor(anchor);
+    else window.scrollTo(0, 0);
   };
 
   navMenu.previousButton.addEventListener("click", () => {
