@@ -38,6 +38,7 @@ export interface EpubBook {
   readonly items: EpubItem[];
   readonly media: MediaFile[];
   readonly fonts: FontName[];
+  readonly navigationTarget?: { index: number; anchor?: string };
 }
 
 interface ZipEntry {
@@ -239,6 +240,22 @@ function findAll(node: Document | Element, localName: string): Element[] {
 
 function findFirst(node: Document | Element, localName: string): Element | null {
   return node.getElementsByTagNameNS("*", localName)[0] ?? null;
+}
+
+function findGuideReference(document_: Document, type: string): string | null {
+  const guide = findFirst(document_, "guide");
+  if (!guide) return null;
+  for (const reference of findAll(guide, "reference")) {
+    if (reference.getAttribute("type") === type) return reference.getAttribute("href");
+  }
+  return null;
+}
+
+function fragmentOf(href: string): string | undefined {
+  const index = href.indexOf("#");
+  if (index < 0) return undefined;
+  const fragment = href.slice(index + 1);
+  return fragment.length > 0 ? decodeURIComponent(fragment) : undefined;
 }
 
 function findSpineTocPath(document_: Document, manifest: Map<string, ManifestItem>): string | null {
@@ -562,15 +579,30 @@ export async function parseEpubBook(content: Uint8Array): Promise<EpubBook> {
 
   const spine = findFirst(opf, "spine");
   const items: EpubItem[] = [];
+  const indexByPath = new Map<string, number>();
   for (const itemref of findAll(spine ?? opf, "itemref")) {
     const idref = itemref.getAttribute("idref");
     if (!idref) continue;
     const item = manifest.get(idref);
     if (!item) continue;
+    indexByPath.set(item.path, items.length);
     items.push(createEpubItem(idref, item.path, titles.get(item.path) ?? "", epub, mediaByPath, fontByName));
   }
 
   if (items.length === 0) throw new Error(`no spine items in "${packagePath}"`);
 
-  return { items, media, fonts };
+  const navPath = findNavDocumentPath(manifest);
+  const navIndex = navPath !== null ? indexByPath.get(navPath) : undefined;
+  const guideTocHref = findGuideReference(opf, "toc");
+  const guideTocIndex = guideTocHref !== null
+    ? indexByPath.get(resolvePath(directory, guideTocHref))
+    : undefined;
+  const navigationTarget =
+    navIndex !== undefined
+      ? { index: navIndex }
+      : guideTocIndex !== undefined && guideTocHref !== null
+        ? { index: guideTocIndex, anchor: fragmentOf(guideTocHref) }
+        : undefined;
+
+  return { items, media, fonts, navigationTarget };
 }

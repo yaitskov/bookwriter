@@ -131,16 +131,26 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
   };
 
   const onKeydown = (event: KeyboardEvent): void => {
-    if (event.key !== "Escape") return;
-    if (loadingModal.isOpen()) {
-      cancelLoading();
+    if (event.key === "Escape") {
+      if (loadingModal.isOpen()) {
+        cancelLoading();
+        return;
+      }
+      if (settingsDialog.isOpen()) {
+        settingsDialog.hide();
+        return;
+      }
+      hideAll();
       return;
     }
-    if (settingsDialog.isOpen()) {
-      settingsDialog.hide();
-      return;
-    }
-    hideAll();
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    if (event.key.toLowerCase() !== "c") return;
+    if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
+    const target = app.openBook.navigationTarget;
+    if (!target) return;
+    void goToBookItem(target.index, target.anchor).catch((error) =>
+      console.error("navigation failed", error),
+    );
   };
 
   const onDocClick = (event: MouseEvent): void => {
