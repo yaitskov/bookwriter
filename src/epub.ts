@@ -366,21 +366,28 @@ function createEpubItem(
       style.dataset.epubItem = id;
       try {
         const ast = parse(css);
-        const fontBase = directoryOf(dropTopFolder(path));
-        deepMap("src", (value) => {
-          if (typeof value !== "string") return value;
-          return replaceUrls(value, (url) => {
-            if (isExternalReference(url)) return null;
-            const target = resolvePath(fontBase, url);
-            const font = fontByName.get(target);
-            if (!font) return null;
+        const base = directoryOf(dropTopFolder(path));
+        deepMap((value) => replaceUrls(value, (url) => {
+          if (isExternalReference(url)) return null;
+          const target = resolvePath(base, url);
+          const font = fontByName.get(target);
+          if (font) {
             const objectUrl = window.URL.createObjectURL(
               new Blob([font.blob as BlobPart], { type: mimeForFont(target) }),
             );
             objectUrls.push(objectUrl);
             return objectUrl;
-          });
-        }, ast);
+          }
+          const media = mediaByPath.get(target);
+          if (media) {
+            const objectUrl = window.URL.createObjectURL(
+              new Blob([media.content as BlobPart], { type: mimeForImage(target) }),
+            );
+            objectUrls.push(objectUrl);
+            return objectUrl;
+          }
+          return null;
+        }), ast);
         style.textContent = stringify(ast);
       } catch (error) {
         console.warn(`[epub] failed to parse/rewrite CSS "${path}": ${String(error)}`);
@@ -508,7 +515,7 @@ function isExternalReference(reference: string): boolean {
     || reference.startsWith("#");
 }
 
-const DOCUMENT_ROOT_FOLDERS = ["epub", "oebps"];
+const DOCUMENT_ROOT_FOLDERS = ["epub", "oebps", "ops"];
 
 function dropTopFolder(path: string): string {
   const slash = path.indexOf("/");

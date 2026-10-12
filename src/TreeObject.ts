@@ -1,19 +1,18 @@
 export function deepMap(
-  propertyName: string,
-  fn: (value: unknown) => unknown,
+  fn: (value: string) => unknown,
   object: unknown,
 ): unknown {
   if (Array.isArray(object)) {
-    for (const element of object) deepMap(propertyName, fn, element);
+    for (const element of object) deepMap(fn, element);
     return object;
   }
   if (object === null || typeof object !== "object") return object;
   const record = object as { [key: string]: unknown };
-  if (record.property && record.property == propertyName && record.value && typeof record.value === "string") {
+  if (record.property && record.value && typeof record.value === "string") {
     record.value = fn(record.value);
   }
   for (const key of Object.keys(record)) {
-    deepMap(propertyName, fn, record[key]);
+    deepMap(fn, record[key]);
   }
   return object;
 }
