@@ -188,6 +188,11 @@ function directoryOf(path: string): string {
   return index < 0 ? "" : path.slice(0, index);
 }
 
+export function resolveHref(fromItemHref: string, rawHref: string): string {
+  if (rawHref.startsWith("/")) return resolvePath("", rawHref);
+  return resolvePath(directoryOf(fromItemHref), rawHref);
+}
+
 function openEpub(content: Uint8Array): OpenEpub {
   const entries = readZip(content);
   const decoderCache = new Map<string, string>();

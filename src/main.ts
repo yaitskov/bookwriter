@@ -4,6 +4,7 @@ import { runBulkSynonym } from "./bulk-run.js";
 import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
 import { parseEpubBook, type EpubBook } from "./epub.js";
 import { createKnownWordDictionary } from "./known-word-dictionary.js";
+import { resolveLinkTarget } from "./hyperlink.js";
 import { createLoadingModal } from "./loading-modal.js";
 import { createNavMenu } from "./nav-menu.js";
 import { popups, type Popup } from "./menu/popup.js";
@@ -105,6 +106,29 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
 
   let clicked: ClickedWord = { word: "", node: null, start: 0, end: 0 };
   let synonymSpan: HTMLSpanElement | null = null;
+  let clickedLink: { href: string; fromIndex: number } | null = null;
+
+  const setFollowLinkVisible = (visible: boolean): void => {
+    const display = visible ? "" : "none";
+    unknownMenu.followLinkItem.style.display = display;
+    synonymMenu.followLinkItem.style.display = display;
+  };
+
+  const followLink = (): void => {
+    if (!clickedLink) return;
+    const { href, fromIndex } = clickedLink;
+    const target = resolveLinkTarget(app.openBook, fromIndex, href);
+    if (target.kind === "external") {
+      window.open(target.url, "_blank", "noopener");
+    } else if (target.kind === "local") {
+      void goToBookItem(target.index).catch((error) =>
+        console.error("failed to follow link", error),
+      );
+    } else {
+      console.warn(`[link] cannot map "${target.path}" to a book item, ignoring`);
+    }
+    hideAll();
+  };
 
   const onKeydown = (event: KeyboardEvent): void => {
     if (event.key !== "Escape") return;
@@ -234,6 +258,16 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     openSettings(synonymMenu.popup, event);
   });
 
+  unknownMenu.followLinkItem.addEventListener("click", (event: MouseEvent) => {
+    event.stopPropagation();
+    followLink();
+  });
+
+  synonymMenu.followLinkItem.addEventListener("click", (event: MouseEvent) => {
+    event.stopPropagation();
+    followLink();
+  });
+
   unknownMenu.hideItem.addEventListener("click", (event: MouseEvent) => {
     event.stopPropagation();
     unknownMenu.popup.hide();
@@ -270,6 +304,11 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     hideAll();
     if (!(target instanceof Element)) { return; }
     if (!target.closest("#book-content")) { return; }
+
+    const anchor = target.closest("a[href]");
+    const rawHref = anchor?.getAttribute("href") ?? null;
+    clickedLink = rawHref ? { href: rawHref, fromIndex: app.openBookItemRendered } : null;
+    setFollowLinkVisible(clickedLink !== null);
 
     const synonym = target.closest(".synonym");
     if (synonym instanceof HTMLSpanElement) {

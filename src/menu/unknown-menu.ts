@@ -2,6 +2,7 @@ import { createPopup, type Popup } from "./popup.js";
 
 export interface UnknownMenu {
   popup: Popup;
+  followLinkItem: HTMLButtonElement;
   unknownItem: HTMLButtonElement;
   settingsItem: HTMLButtonElement;
   hideItem: HTMLButtonElement;
@@ -9,6 +10,10 @@ export interface UnknownMenu {
 
 export function createUnknownMenu(doc: Document): UnknownMenu {
   const popup = createPopup(doc, "unknown-word-menu");
+  const followLinkItem = doc.createElement("button");
+  followLinkItem.type = "button";
+  followLinkItem.textContent = "Follow the link";
+  followLinkItem.style.display = "none";
   const unknownItem = doc.createElement("button");
   unknownItem.type = "button";
   unknownItem.textContent = "Unknown word";
@@ -18,6 +23,6 @@ export function createUnknownMenu(doc: Document): UnknownMenu {
   const hideItem = doc.createElement("button");
   hideItem.type = "button";
   hideItem.textContent = "Hide (Esc)";
-  popup.element.append(unknownItem, settingsItem, hideItem);
-  return { popup, unknownItem, settingsItem, hideItem };
+  popup.element.append(followLinkItem, unknownItem, settingsItem, hideItem);
+  return { popup, followLinkItem, unknownItem, settingsItem, hideItem };
 }
