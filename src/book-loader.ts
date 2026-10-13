@@ -19,7 +19,6 @@ export function loadBookFile(options: LoadBookFileOptions = {}): Promise<Uint8Ar
     let settled = false;
 
     const cleanup = (): void => {
-      window.removeEventListener("focus", onWindowFocus);
       input.removeEventListener("change", onChange);
       input.removeEventListener("cancel", onCancel);
       input.remove();
@@ -48,16 +47,8 @@ export function loadBookFile(options: LoadBookFileOptions = {}): Promise<Uint8Ar
         .catch((error) => finish(() => reject(error)));
     };
 
-    const onWindowFocus = (): void => {
-      window.setTimeout(() => {
-        if (settled) return;
-        if (!input.files || input.files.length === 0) onCancel();
-      }, 0);
-    };
-
     input.addEventListener("change", onChange);
     input.addEventListener("cancel", onCancel);
-    window.addEventListener("focus", onWindowFocus);
 
     input.click();
   });

@@ -38,6 +38,8 @@ export interface EpubBook {
   readonly items: EpubItem[];
   readonly media: MediaFile[];
   readonly fonts: FontName[];
+  readonly title: string;
+  readonly authors: string[];
   readonly navigationTarget?: { index: number; anchor?: string };
 }
 
@@ -263,6 +265,17 @@ function findSpineTocPath(document_: Document, manifest: Map<string, ManifestIte
   const tocId = spine?.getAttribute("toc");
   if (!tocId) return null;
   return manifest.get(tocId)?.path ?? null;
+}
+
+function readMetadata(opf: Document): { title: string; authors: string[] } {
+  const metadata = findFirst(opf, "metadata") ?? opf;
+  const title = findFirst(metadata, "title")?.textContent?.trim() ?? "";
+  const authors: string[] = [];
+  for (const creator of findAll(metadata, "creator")) {
+    const text = creator.textContent?.trim();
+    if (text) authors.push(text);
+  }
+  return { title, authors };
 }
 
 function findNavDocumentPath(manifest: Map<string, ManifestItem>): string | null {
@@ -561,6 +574,7 @@ export async function parseEpubBook(content: Uint8Array): Promise<EpubBook> {
     });
   }
 
+  const metadata = readMetadata(opf);
   const titles = await readTitles(epub, manifest, opf, directory);
 
   const media = await Promise.all(
@@ -604,5 +618,5 @@ export async function parseEpubBook(content: Uint8Array): Promise<EpubBook> {
         ? { index: guideTocIndex, anchor: fragmentOf(guideTocHref) }
         : undefined;
 
-  return { items, media, fonts, navigationTarget };
+  return { items, media, fonts, title: metadata.title, authors: metadata.authors, navigationTarget };
 }

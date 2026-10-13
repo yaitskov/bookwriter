@@ -205,6 +205,58 @@ export function ensureStyles(doc: Document = document): void {
       opacity: 0.5;
       cursor: default;
     }
+    .messages {
+      position: fixed;
+      right: 12px;
+      bottom: 12px;
+      z-index: 10050;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      max-width: min(360px, 90vw);
+      font: 14px system-ui, sans-serif;
+      pointer-events: none;
+    }
+    .message {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      opacity: 0.9;
+      pointer-events: auto;
+    }
+    .message-info {
+      background: #2b6cb0;
+      color: #fff;
+    }
+    .message-warning {
+      background: #e6b800;
+      color: #222;
+    }
+    .message-error {
+      background: #c53030;
+      color: #fff;
+    }
+    .message-close {
+      flex: 0 0 auto;
+      border: none;
+      background: none;
+      color: inherit;
+      cursor: pointer;
+      font: inherit;
+      line-height: 1;
+      padding: 0;
+      opacity: 0.8;
+    }
+    .message-close:hover {
+      opacity: 1;
+    }
+    .message-text {
+      flex: 1 1 auto;
+    }
   `;
   doc.head.appendChild(style);
 }

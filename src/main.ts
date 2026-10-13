@@ -6,6 +6,7 @@ import { parseEpubBook, type EpubBook } from "./epub.js";
 import { createKnownWordDictionary } from "./known-word-dictionary.js";
 import { resolveLinkTarget } from "./hyperlink.js";
 import { createLoadingModal } from "./loading-modal.js";
+import { createMessages, Info } from "./messages.js";
 import { createNavMenu } from "./nav-menu.js";
 import { popups, type Popup } from "./menu/popup.js";
 import { createSynonymMenu } from "./menu/synonym-menu.js";
@@ -29,7 +30,7 @@ class App {
   public openBookItemRendered : number;
   constructor() {
     this.openBookBlob = new Uint8Array(0);
-    this.openBook = { items: [], media: [], fonts: [] };
+    this.openBook = { items: [], media: [], fonts: [], title: "", authors: [] };
     this.openBookItemIndex = -1;
     this.openBookItemRendered = -1;
   }
@@ -112,6 +113,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
   const unknownMenu = createUnknownMenu(doc);
   const synonymMenu = createSynonymMenu(doc);
   const navMenu = createNavMenu(doc);
+  const messages = createMessages(doc);
 
   let clicked: ClickedWord = { word: "", node: null, start: 0, end: 0 };
   let synonymSpan: HTMLSpanElement | null = null;
@@ -149,6 +151,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
 
   const onKeydown = (event: KeyboardEvent): void => {
     if (event.key === "Escape") {
+      messages.clear();
       if (loadingModal.isOpen()) {
         cancelLoading();
         return;
@@ -299,7 +302,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
             }
             app.openBookBlob = new Uint8Array(0);
             app.openBookItemRendered = -1;
-            app.openBook = { items: [], media: [], fonts: [] };
+            app.openBook = { items: [], media: [], fonts: [], title: "", authors: [] };
           }
           const book = await parseEpubBook(bytes);
           if (token !== loadToken) return;
@@ -310,6 +313,9 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
           app.openBookItemRendered = 0;
           updateNavMenu();
           if (c2welcome) c2welcome.style.display = "none";
+          const { title, authors } = app.openBook;
+          const by = authors.length > 0 ? ` by ${authors.join(", ")}` : "";
+          messages.add(Info(`Loaded ${title || "book"}${by}`));
 
         } finally {
           if (token === loadToken) loadingModal.hide();
@@ -411,6 +417,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
   doc.addEventListener("click", onDocClick);
   doc.addEventListener("keydown", onKeydown);
   doc.addEventListener("wheel", onWheel, { passive: true });
+  window.addEventListener("scroll", () => messages.clear(), { passive: true });
 
   doc.addEventListener("click", (event: Event) => {
     const mouseEvent = event as MouseEvent;
