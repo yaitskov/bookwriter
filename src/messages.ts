@@ -17,7 +17,13 @@ export function createMessages(doc: Document = document): Messages {
   const element = doc.createElement("div");
   element.className = "messages";
 
+  let lastMessage: Message | null = null;
+  let lastNode: HTMLDivElement | null = null;
+
   const add = (message: Message): void => {
+    if (lastMessage && lastMessage.kind === message.kind && lastMessage.text === message.text) {
+      return;
+    }
     const item = doc.createElement("div");
     item.className = `message message-${message.kind}`;
 
@@ -31,12 +37,24 @@ export function createMessages(doc: Document = document): Messages {
     text.className = "message-text";
     text.textContent = message.text;
 
-    close.addEventListener("click", () => item.remove());
+    close.addEventListener("click", () => {
+      if (item === lastNode) {
+        lastMessage = null;
+        lastNode = null;
+      }
+      item.remove();
+    });
     item.append(close, text);
     element.append(item);
+    lastMessage = message;
+    lastNode = item;
   };
 
-  const clear = (): void => element.replaceChildren();
+  const clear = (): void => {
+    lastMessage = null;
+    lastNode = null;
+    element.replaceChildren();
+  };
 
   doc.body.append(element);
   return { element, add, clear };
