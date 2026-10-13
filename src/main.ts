@@ -6,7 +6,7 @@ import { parseEpubBook, type EpubBook } from "./epub.js";
 import { createKnownWordDictionary } from "./known-word-dictionary.js";
 import { resolveLinkTarget } from "./hyperlink.js";
 import { createLoadingModal } from "./loading-modal.js";
-import { createMessages, Info } from "./messages.js";
+import { createMessages, Info, Warning } from "./messages.js";
 import { createNavMenu } from "./nav-menu.js";
 import { popups, type Popup } from "./menu/popup.js";
 import { createSynonymMenu } from "./menu/synonym-menu.js";
@@ -193,7 +193,13 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
       return;
     }
     if (event.ctrlKey || event.metaKey || event.altKey) return;
-    if (event.key.toLowerCase() !== "c") return;
+    const key = event.key.toLowerCase();
+    if (key === "q") {
+      if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
+      closeBook();
+      return;
+    }
+    if (key !== "c") return;
     if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
     const target = app.openBook.navigationTarget;
     if (!target) return;
@@ -221,6 +227,22 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     const hasBook = app.openBook.items.length > 0 && app.openBookItemIndex >= 0;
     navMenu.previousButton.disabled = !hasBook;
     navMenu.nextButton.disabled = !hasBook;
+  };
+
+  const closeBook = (): void => {
+    if (app.openBookItemRendered < 0 || app.openBook.items.length === 0) {
+      messages.add(Warning("No book is open"));
+      return;
+    }
+    app.openBook.items[app.openBookItemRendered]?.cleanup(bookItemOutput.id);
+    app.openBookBlob = new Uint8Array(0);
+    app.openBook = { items: [], media: [], fonts: [], title: "", authors: [] };
+    app.openBookItemIndex = -1;
+    app.openBookItemRendered = -1;
+    bookItemOutput.replaceChildren();
+    updateNavMenu();
+    if (c2welcome) c2welcome.style.display = "";
+    messages.add(Info("Book closed"));
   };
 
   const scrollToAnchor = (anchor: string): void => {
