@@ -35,6 +35,15 @@ class App {
   }
 }
 
+export type ScrollTo =
+  | { readonly kind: "anchor"; readonly anchor: string }
+  | { readonly kind: "start" }
+  | { readonly kind: "end" };
+
+export const ToAnchor = (anchor: string): ScrollTo => ({ kind: "anchor", anchor });
+export const ToStart = (): ScrollTo => ({ kind: "start" });
+export const ToEnd = (): ScrollTo => ({ kind: "end" });
+
 function hideAll(): void {
   for (const popup of popups) popup.hide();
 }
@@ -121,7 +130,8 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     if (target.kind === "external") {
       window.open(target.url, "_blank", "noopener");
     } else if (target.kind === "local") {
-      void goToBookItem(target.index, target.anchor).catch((error) =>
+      const scroll = target.anchor ? ToAnchor(target.anchor) : ToStart();
+      void goToBookItem(target.index, scroll).catch((error) =>
         console.error("failed to follow link", error),
       );
     } else {
@@ -129,6 +139,13 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     }
     hideAll();
   };
+
+  const isWindowAtBottom = (): boolean => {
+    const el = doc.scrollingElement ?? doc.documentElement;
+    return window.innerHeight + window.scrollY >= el.scrollHeight - 1;
+  };
+
+  const isWindowAtTop = (): boolean => window.scrollY <= 0;
 
   const onKeydown = (event: KeyboardEvent): void => {
     if (event.key === "Escape") {
@@ -149,12 +166,36 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
       navigateRelative(event.key === "ArrowLeft" ? -1 : 1);
       return;
     }
+    if ((event.key === " " || event.key === "Spacebar") && event.shiftKey) {
+      if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
+      if (isWindowAtTop()) {
+        event.preventDefault();
+        navigateRelative(-1);
+      }
+      return;
+    }
+    if (event.key === "ArrowUp") {
+      if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
+      if (isWindowAtTop()) {
+        event.preventDefault();
+        navigateRelative(-1);
+      }
+      return;
+    }
+    if (event.key === " " || event.key === "Spacebar" || event.key === "ArrowDown") {
+      if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
+      if (!isWindowAtBottom()) return;
+      event.preventDefault();
+      navigateRelative(1);
+      return;
+    }
     if (event.ctrlKey || event.metaKey || event.altKey) return;
     if (event.key.toLowerCase() !== "c") return;
     if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
     const target = app.openBook.navigationTarget;
     if (!target) return;
-    void goToBookItem(target.index, target.anchor).catch((error) =>
+    const scroll = target.anchor ? ToAnchor(target.anchor) : ToStart();
+    void goToBookItem(target.index, scroll).catch((error) =>
       console.error("navigation failed", error),
     );
   };
@@ -195,10 +236,29 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     }
   };
 
-  const goToBookItem = async (index: number, anchor?: string): Promise<void> => {
+  const scrollToEnd = (): void => {
+    const el = doc.scrollingElement ?? doc.documentElement;
+    window.scrollTo(0, el.scrollHeight);
+  };
+
+  const applyScrollTo = (scroll: ScrollTo): void => {
+    switch (scroll.kind) {
+      case "anchor":
+        scrollToAnchor(scroll.anchor);
+        break;
+      case "start":
+        window.scrollTo(0, 0);
+        break;
+      case "end":
+        scrollToEnd();
+        break;
+    }
+  };
+
+  const goToBookItem = async (index: number, scroll: ScrollTo = ToStart()): Promise<void> => {
     if (index < 0 || index >= app.openBook.items.length) return;
     if (index === app.openBookItemRendered) {
-      if (anchor) scrollToAnchor(anchor);
+      applyScrollTo(scroll);
       return;
     }
     app.openBook.items[app.openBookItemRendered]?.cleanup(bookItemOutput.id);
@@ -206,15 +266,14 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     await renderOpenBookItem();
     app.openBookItemRendered = index;
     updateNavMenu();
-    if (anchor) scrollToAnchor(anchor);
-    else window.scrollTo(0, 0);
+    applyScrollTo(scroll);
   };
 
   const navigateRelative = (delta: number): void => {
     const count = app.openBook.items.length;
     if (count === 0 || app.openBookItemIndex < 0) return;
     const index = (app.openBookItemIndex + delta + count) % count;
-    void goToBookItem(index).catch((error) =>
+    void goToBookItem(index, delta < 0 ? ToEnd() : ToStart()).catch((error) =>
       console.error("navigation failed", error),
     );
   };
@@ -336,8 +395,22 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     synonymMenu.popup.hide();
   });
 
+  let advancing = false;
+  const onWheel = (event: WheelEvent): void => {
+    if (advancing || event.deltaY === 0) return;
+    if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
+    const next = event.deltaY > 0;
+    if (next ? !isWindowAtBottom() : !isWindowAtTop()) return;
+    advancing = true;
+    navigateRelative(next ? 1 : -1);
+    window.setTimeout(() => {
+      advancing = false;
+    }, 300);
+  };
+
   doc.addEventListener("click", onDocClick);
   doc.addEventListener("keydown", onKeydown);
+  doc.addEventListener("wheel", onWheel, { passive: true });
 
   doc.addEventListener("click", (event: Event) => {
     const mouseEvent = event as MouseEvent;
