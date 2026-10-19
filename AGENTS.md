@@ -6,12 +6,16 @@
 - trim trailing spaces
 - add new lines to last line in file
 ## Code style
-Prefer Functional Style Programming whenever possible:
+### Prefer Functional Style Programming whenever possible:
 - immutable structures
 - map, filter and reduce better than loops
 - ADTs
 - high order functions
 - phantom types
+### Stick to design patterns principles
+- OOP
+- OOAD
+- patterns (Flyweight, Composite, Decorator, Bridge, Facade, Factory method etc.)
 
 ## Don't read
 - word-frequency-table.ts
