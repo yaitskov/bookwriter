@@ -95,6 +95,15 @@ export class App {
     this.updateNavMenu();
   }
 
+  public navigateRelative(delta: number): void {
+    const count = this.openBook.items.length;
+    if (count === 0 || this.openBookItemIndex < 0) return;
+    const index = (this.openBookItemIndex + delta + count) % count;
+    void this.goToBookItem(index, delta < 0 ? ToEnd() : ToStart()).catch((error) =>
+      console.error("navigation failed", error),
+    );
+  }
+
   public loadNewBookDialog() {
     loadBookFile({ doc: this.doc })
       .then(async (bytes : Uint8Array) => {

@@ -13,7 +13,7 @@ import { createSynonymMenu } from "./menu/synonym-menu.js";
 import { createUnknownMenu } from "./menu/unknown-menu.js";
 import { createUserSettings } from "./settings.js";
 import { createSettingsDialog } from "./settings-dialog.js";
-import { Scroll, ToAnchor, ToEnd, ToStart, type ScrollTo } from "./scroll-to.js";
+import { Scroll, ToAnchor, ToStart, type ScrollTo } from "./scroll-to.js";
 import { BLOCK_SELECTOR, extractSentence } from "./sentence.js";
 import { ensureStyles } from "./style.js";
 import { createThesaurus } from "./thesaurus.js";
@@ -143,14 +143,14 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
       if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
       event.preventDefault();
-      navigateRelative(event.key === "ArrowLeft" ? -1 : 1);
+      app.navigateRelative(event.key === "ArrowLeft" ? -1 : 1);
       return;
     }
     if ((event.key === " " || event.key === "Spacebar") && event.shiftKey) {
       if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
       if (isWindowAtTop()) {
         event.preventDefault();
-        navigateRelative(-1);
+        app.navigateRelative(-1);
       }
       return;
     }
@@ -158,7 +158,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
       if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
       if (isWindowAtTop()) {
         event.preventDefault();
-        navigateRelative(-1);
+        app.navigateRelative(-1);
       }
       return;
     }
@@ -166,7 +166,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
       if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
       if (!isWindowAtBottom()) return;
       event.preventDefault();
-      navigateRelative(1);
+      app.navigateRelative(1);
       return;
     }
     if (event.ctrlKey || event.metaKey || event.altKey) return;
@@ -207,23 +207,8 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     await app.goToBookItem(index, scroll);
   };
 
-  const navigateRelative = (delta: number): void => {
-    const count = app.openBook.items.length;
-    if (count === 0 || app.openBookItemIndex < 0) return;
-    const index = (app.openBookItemIndex + delta + count) % count;
-    void goToBookItem(index, delta < 0 ? ToEnd() : ToStart()).catch((error) =>
-      console.error("navigation failed", error),
-    );
-  };
-
-  navMenu.previousButton.addEventListener("click", () => {
-    navigateRelative(-1);
-  });
-
-  navMenu.nextButton.addEventListener("click", () => {
-    navigateRelative(1);
-  });
-
+  navMenu.previousButton.addEventListener("click", () => app.navigateRelative(-1));
+  navMenu.nextButton.addEventListener("click", () => app.navigateRelative(1));
   loadNewBookBtn.addEventListener("click", () => app.loadNewBookDialog());
 
   unknownMenu.unknownItem.addEventListener("click", (event: MouseEvent) => {
@@ -308,7 +293,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     const next = event.deltaY > 0;
     if (next ? !isWindowAtBottom() : !isWindowAtTop()) return;
     advancing = true;
-    navigateRelative(next ? 1 : -1);
+    app.navigateRelative(next ? 1 : -1);
     window.setTimeout(() => {
       advancing = false;
     }, 300);
