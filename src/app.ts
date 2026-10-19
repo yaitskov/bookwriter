@@ -15,12 +15,12 @@ export class App {
   public openBookItemRendered : number;
   public readonly tokenFactory : AsyncTokenFactory;
   public readonly settingsDialog: SettingsDialog;
-  private messages : Messages;
+  public readonly messages : Messages;
   private bookItemOutput: HTMLDivElement;
-  private scroller: Scroll;
+  public readonly scroller: Scroll;
   private c2welcome: HTMLElement;
   private navMenu: NavMenu;
-  private loadingModal: LoadingModal;
+  public readonly loadingModal: LoadingModal;
   private doc: Document;
 
   constructor(doc: Document, tokenFactory: AsyncTokenFactory,

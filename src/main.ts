@@ -3,6 +3,7 @@ import { AsyncTokenFactory, type AsyncToken } from "./async-token.js";
 import { createBulkSynonym, restoreIneligibleSynonyms } from "./bulk-synonym.js";
 import { runBulkSynonym } from "./bulk-run.js";
 import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
+import { handleKeydown } from "./event/keydown.js";
 import { createKnownWordDictionary } from "./known-word-dictionary.js";
 import { resolveLinkTarget } from "./hyperlink.js";
 import { createLoadingModal } from "./loading-modal.js";
@@ -129,81 +130,11 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     hideAll();
   };
 
-  const onKeydown = (event: KeyboardEvent): void => {
-    if (event.key === "Escape") {
-      messages.clear();
-      if (loadingModal.isOpen()) {
-        loadingModal.cancelLoading();
-        return;
-      }
-      if (settingsDialog.isOpen()) {
-        settingsDialog.hide();
-        return;
-      }
-      hideAll();
-      return;
-    }
-    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-      if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
-      event.preventDefault();
-      app.navigateRelative(event.key === "ArrowLeft" ? -1 : 1);
-      return;
-    }
-    if ((event.key === " " || event.key === "Spacebar") && event.shiftKey) {
-      if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
-      if (scroller.isWindowAtTop()) {
-        event.preventDefault();
-        app.navigateRelative(-1);
-      }
-      return;
-    }
-    if (event.key === "ArrowUp") {
-      if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
-      if (scroller.isWindowAtTop()) {
-        event.preventDefault();
-        app.navigateRelative(-1);
-      }
-      return;
-    }
-    if (event.key === " " || event.key === "Spacebar" || event.key === "ArrowDown") {
-      if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
-      if (!scroller.isWindowAtBottom()) return;
-      event.preventDefault();
-      app.navigateRelative(1);
-      return;
-    }
-    if (event.ctrlKey || event.metaKey || event.altKey) return;
-    const key = event.key.toLowerCase();
-    if (key === "q") {
-      if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
-      closeBook();
-      return;
-    }
-    if (key === "o") {
-      if (event.repeat) return;
-      if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
-      app.loadNewBookDialog();
-      return;
-    }
-    if (key !== "c") return;
-    if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
-    const target = app.openBook.navigationTarget;
-    if (!target) return;
-    const scroll = target.anchor ? ToAnchor(target.anchor) : ToStart();
-    void goToBookItem(target.index, scroll).catch((error) =>
-      console.error("navigation failed", error),
-    );
-  };
-
   const onDocClick = (event: MouseEvent): void => {
     const target = event.target as Node;
     for (const popup of popups) {
       if (popup.isOpen() && !popup.contains(target)) popup.hide();
     }
-  };
-
-  const closeBook = (): void => {
-    app.closeBook();
   };
 
   const goToBookItem = async (index: number, scroll: ScrollTo = ToStart()): Promise<void> => {
@@ -303,7 +234,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
   };
 
   doc.addEventListener("click", onDocClick);
-  doc.addEventListener("keydown", onKeydown);
+  doc.addEventListener("keydown", (event) => handleKeydown(event, app, hideAll));
   doc.addEventListener("wheel", onWheel, { passive: true });
   window.addEventListener("scroll", () => messages.clear(), { passive: true });
 
