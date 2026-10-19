@@ -1,37 +1,8 @@
 import type { EpubBook } from "./epub.js";
+import { AsyncTokenFactory, type AsyncToken } from "./async-token.js";
 import { Messages, Info, Warning } from "./messages.js";
 import { Scroll, ToAnchor, ToEnd, ToStart, type ScrollTo } from "./scroll-to.js";
 import { parseEpubBook } from "./epub.js";
-
-export class AsyncTokenFactory {
-  private counter: number;
-  constructor() {
-    this.counter = 0;
-  }
-  public issue(): AsyncToken {
-    return new AsyncToken(this, ++this.counter);
-  }
-  public isTokenValid(token: AsyncToken): boolean {
-    return token.token === this.counter;
-  }
-}
-
-export class AsyncToken {
-  private factory: AsyncTokenFactory;
-  readonly token: number;
-  constructor(factory: AsyncTokenFactory, token: number) {
-    this.factory = factory;
-    this.token = token;
-  }
-
-  public isValid(): boolean {
-    return this.factory.isTokenValid(this);
-  }
-
-  public onValid(cb : () => void): void {
-    if (this.isValid()) cb();
-  }
-}
 
 export class App {
   public openBookBlob : Uint8Array;
