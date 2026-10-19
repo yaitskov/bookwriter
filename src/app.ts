@@ -7,6 +7,11 @@ import { type LoadingModal } from "./loading-modal.js";
 import { loadBookFile } from "./book-loader.js";
 import { type NavMenu } from "./nav-menu.js";
 import { type SettingsDialog } from "./settings-dialog.js";
+import { popups, hideAll } from "./menu/popup.js";
+import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
+import { resolveLinkTarget } from "./hyperlink.js";
+
+export type ClickedLink = { href: string; fromIndex: number }
 
 export class App {
   public openBookBlob : Uint8Array;
@@ -22,13 +27,22 @@ export class App {
   private navMenu: NavMenu;
   public readonly loadingModal: LoadingModal;
   private doc: Document;
+  private win: Window;
+  public clicked: ClickedWord;
+  public clickedLink: ClickedLink | null;
+  public synonymSpan: HTMLSpanElement | null;
 
-  constructor(doc: Document, tokenFactory: AsyncTokenFactory,
+  constructor(doc: Document, win: Window, tokenFactory: AsyncTokenFactory,
               loadingModal: LoadingModal,
               c2welcome: HTMLElement, navMenu: NavMenu,
               scroller: Scroll, bookItemOutput: HTMLDivElement,
               messages : Messages, settingsDialog: SettingsDialog) {
+    this.clicked =  { word: "", node: null, start: 0, end: 0 };
+    this.synonymSpan = null;
+    this.clickedLink = null;
+
     this.doc = doc;
+    this.win = win;
     this.loadingModal = loadingModal;
     this.c2welcome = c2welcome;
     this.navMenu = navMenu;
@@ -41,6 +55,23 @@ export class App {
     this.openBook = { items: [], media: [], fonts: [], title: "", authors: [] };
     this.openBookItemIndex = -1;
     this.openBookItemRendered = -1;
+  }
+
+  public followLink() {
+    if (!this.clickedLink) return;
+    const { href, fromIndex } = this.clickedLink;
+    const target = resolveLinkTarget(this.openBook, fromIndex, href);
+    if (target.kind === "external") {
+      this.win.open(target.url, "_blank", "noopener");
+    } else if (target.kind === "local") {
+      const scroll = target.anchor ? ToAnchor(target.anchor) : ToStart();
+      this.goToBookItem(target.index, scroll).catch((error) =>
+        console.error("failed to follow link", error),
+      );
+    } else {
+      console.warn(`[link] cannot map "${target.path}" to a book item, ignoring`);
+    }
+    hideAll();
   }
 
   public updateNavMenu(): void {

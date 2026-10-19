@@ -1,7 +1,8 @@
 import type { App } from "../app.js";
 import { ToAnchor, ToStart } from "../scroll-to.js";
+import { hideAll } from "../menu/popup.js";
 
-export function handleKeydown(event: KeyboardEvent, app: App, hideAll: () => void): void {
+export function handleKeydown(event: KeyboardEvent, app: App): void {
   const isModalOpen = (): boolean => app.loadingModal.isOpen() || app.settingsDialog.isOpen();
 
   if (event.key === "Escape") {

@@ -10,6 +10,10 @@ export interface Popup {
 
 export const popups: Popup[] = [];
 
+export function hideAll(): void {
+  for (const popup of popups) popup.hide();
+}
+
 export function createPopup(doc: Document, id: string): Popup {
   const element = doc.createElement("div");
   element.id = id;

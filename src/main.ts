@@ -4,13 +4,14 @@ import { createBulkSynonym, restoreIneligibleSynonyms } from "./bulk-synonym.js"
 import { runBulkSynonym } from "./bulk-run.js";
 import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
 import { handleKeydown } from "./event/keydown.js";
+import { bindMouseDoc } from "./event/mouse.js";
 import { bindMenus } from "./event/menu.js";
 import { createKnownWordDictionary } from "./known-word-dictionary.js";
 import { resolveLinkTarget } from "./hyperlink.js";
 import { createLoadingModal } from "./loading-modal.js";
 import { createMessages, Info, Warning } from "./messages.js";
 import { createNavMenu } from "./nav-menu.js";
-import { popups } from "./menu/popup.js";
+import { popups, hideAll } from "./menu/popup.js";
 import { createSynonymMenu } from "./menu/synonym-menu.js";
 import { createUnknownMenu } from "./menu/unknown-menu.js";
 import { createUserSettings } from "./settings.js";
@@ -26,9 +27,6 @@ import { applySynonym, restoreAllOccurrences, wrapWord } from "./word-span.js";
 const CAMBRIDGE_BASE = "https://dictionary.cambridge.org/dictionary/english/";
 const thesaurus = createThesaurus();
 
-function hideAll(): void {
-  for (const popup of popups) popup.hide();
-}
 
 const getDiv = (id : string): HTMLElement => {
   const d = document.getElementById(id);
@@ -90,6 +88,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
   });
   const app = new App(
     doc,
+    window,
     tokenFactory,
     loadingModal,
     c2welcome,
@@ -103,54 +102,15 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
   const unknownMenu = createUnknownMenu(doc);
   const synonymMenu = createSynonymMenu(doc);
 
-
-  let clicked: ClickedWord = { word: "", node: null, start: 0, end: 0 };
-  let synonymSpan: HTMLSpanElement | null = null;
-  let clickedLink: { href: string; fromIndex: number } | null = null;
-
-  const setFollowLinkVisible = (visible: boolean): void => {
-    const display = visible ? "" : "none";
-    unknownMenu.followLinkItem.style.display = display;
-    synonymMenu.followLinkItem.style.display = display;
-  };
-
-  const followLink = (): void => {
-    if (!clickedLink) return;
-    const { href, fromIndex } = clickedLink;
-    const target = resolveLinkTarget(app.openBook, fromIndex, href);
-    if (target.kind === "external") {
-      window.open(target.url, "_blank", "noopener");
-    } else if (target.kind === "local") {
-      const scroll = target.anchor ? ToAnchor(target.anchor) : ToStart();
-      void goToBookItem(target.index, scroll).catch((error) =>
-        console.error("failed to follow link", error),
-      );
-    } else {
-      console.warn(`[link] cannot map "${target.path}" to a book item, ignoring`);
-    }
-    hideAll();
-  };
-
-  const onDocClick = (event: MouseEvent): void => {
-    const target = event.target as Node;
-    for (const popup of popups) {
-      if (popup.isOpen() && !popup.contains(target)) popup.hide();
-    }
-  };
-
-  const goToBookItem = async (index: number, scroll: ScrollTo = ToStart()): Promise<void> => {
-    await app.goToBookItem(index, scroll);
-  };
-
   navMenu.previousButton.addEventListener("click", () => app.navigateRelative(-1));
   navMenu.nextButton.addEventListener("click", () => app.navigateRelative(1));
   loadNewBookBtn.addEventListener("click", () => app.loadNewBookDialog());
 
   const onUnknownWord = (): void => {
-    const { word, node } = clicked;
+    const { word, node } = app.clicked;
     console.log(word || null);
     if (!node) return;
-    const span = wrapWord(clicked);
+    const span = wrapWord(app.clicked);
     if (!span) return;
     known.remove(word);
     unknown.add(word);
@@ -166,14 +126,14 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
   };
 
   const onDictionary = (): void => {
-    if (!synonymSpan) return;
-    const word = synonymSpan.dataset.originWord ?? synonymSpan.textContent ?? "";
+    if (!app.synonymSpan) return;
+    const word = app.synonymSpan.dataset.originWord ?? app.synonymSpan.textContent ?? "";
     window.open(`${CAMBRIDGE_BASE}${encodeURIComponent(word)}`, "_blank", "noopener");
   };
 
   const onRemembered = (): void => {
-    if (!synonymSpan) return;
-    const word = synonymSpan.dataset.originWord ?? synonymSpan.textContent ?? "";
+    if (!app.synonymSpan) return;
+    const word = app.synonymSpan.dataset.originWord ?? app.synonymSpan.textContent ?? "";
     const restored = restoreAllOccurrences(word, bookItemOutput);
     unknown.remove(word);
     known.add(word);
@@ -185,57 +145,13 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     synonymMenu,
     settingsDialog,
     onUnknownWord,
-    followLink,
+    () => app.followLink(),
     onDictionary,
     onRemembered,
   );
 
-  let advancing = false;
-  const onWheel = (event: WheelEvent): void => {
-    if (advancing || event.deltaY === 0) return;
-    if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
-    const next = event.deltaY > 0;
-    if (next ? !scroller.isWindowAtBottom() : !scroller.isWindowAtTop()) return;
-    advancing = true;
-    app.navigateRelative(next ? 1 : -1);
-    window.setTimeout(() => {
-      advancing = false;
-    }, 300);
-  };
-
-  doc.addEventListener("click", onDocClick);
-  doc.addEventListener("keydown", (event) => handleKeydown(event, app, hideAll));
-  doc.addEventListener("wheel", onWheel, { passive: true });
-  window.addEventListener("scroll", () => messages.clear(), { passive: true });
-
-  doc.addEventListener("click", (event: Event) => {
-    const mouseEvent = event as MouseEvent;
-    if (mouseEvent.button !== 0) return;
-    const target = event.target;
-    hideAll();
-    if (!(target instanceof Element)) { return; }
-    if (!target.closest("#book-content")) { return; }
-
-    const anchor = target.closest("a[href]");
-    const rawHref = anchor?.getAttribute("href") ?? null;
-    clickedLink = rawHref ? { href: rawHref, fromIndex: app.openBookItemRendered } : null;
-    setFollowLinkVisible(clickedLink !== null);
-
-    const synonym = target.closest(".synonym");
-    if (synonym instanceof HTMLSpanElement) {
-      event.preventDefault();
-      synonymSpan = synonym;
-      synonymMenu.label.textContent = synonym.dataset.originWord ?? synonym.textContent ?? "";
-      synonymMenu.popup.show(mouseEvent.clientX, mouseEvent.clientY);
-      return;
-    }
-
-    const block = target.closest(BLOCK_SELECTOR);
-    if (!(block instanceof HTMLElement)) return;
-    clicked = extractClickedWord(block);
-    event.preventDefault();
-    unknownMenu.popup.show(mouseEvent.clientX, mouseEvent.clientY);
-  });
+  doc.addEventListener("keydown", (event) => handleKeydown(event, app));
+  bindMouseDoc(doc, window, app, messages,  unknownMenu, synonymMenu);
 
   if (doc.readyState === "complete") {
     startBulkRun();
