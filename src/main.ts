@@ -42,7 +42,6 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
   const c2welcome = getDiv("c2-welcome");
   const loadingModal = createLoadingModal({ doc, onCancel: () => tokenFactory.issue() });
   const tokenFactory = new AsyncTokenFactory();
-  const app = new App(doc, tokenFactory, loadingModal, c2welcome, navMenu, scroller, bookItemOutput, messages);
   const known = createKnownWordDictionary();
   const unknown = createUnknownWordDictionary();
   bindPersistence(known, window, doc);
@@ -87,6 +86,17 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     onApply: applyMaximumTriggerWordFrequency,
     doc,
   });
+  const app = new App(
+    doc,
+    tokenFactory,
+    loadingModal,
+    c2welcome,
+    navMenu,
+    scroller,
+    bookItemOutput,
+    messages,
+    settingsDialog,
+  );
   const loadNewBookBtn = getDiv("load-new-book");
   const unknownMenu = createUnknownMenu(doc);
   const synonymMenu = createSynonymMenu(doc);

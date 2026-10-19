@@ -6,6 +6,7 @@ import { parseEpubBook } from "./epub.js";
 import { type LoadingModal } from "./loading-modal.js";
 import { loadBookFile } from "./book-loader.js";
 import { type NavMenu } from "./nav-menu.js";
+import { type SettingsDialog } from "./settings-dialog.js";
 
 export class App {
   public openBookBlob : Uint8Array;
@@ -13,6 +14,7 @@ export class App {
   public openBookItemIndex : number;
   public openBookItemRendered : number;
   public readonly tokenFactory : AsyncTokenFactory;
+  public readonly settingsDialog: SettingsDialog;
   private messages : Messages;
   private bookItemOutput: HTMLDivElement;
   private scroller: Scroll;
@@ -25,12 +27,13 @@ export class App {
               loadingModal: LoadingModal,
               c2welcome: HTMLElement, navMenu: NavMenu,
               scroller: Scroll, bookItemOutput: HTMLDivElement,
-              messages : Messages) {
+              messages : Messages, settingsDialog: SettingsDialog) {
     this.doc = doc;
     this.loadingModal = loadingModal;
     this.c2welcome = c2welcome;
     this.navMenu = navMenu;
     this.tokenFactory = tokenFactory;
+    this.settingsDialog = settingsDialog;
     this.scroller = scroller;
     this.bookItemOutput = bookItemOutput;
     this.messages = messages;
