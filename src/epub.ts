@@ -45,6 +45,7 @@ interface OpenEpub {
   read(path: string): Promise<Uint8Array>;
   readText(path: string): Promise<string>;
   readDocument(path: string): Promise<Document>;
+  readXml(path: string): Promise<Document>;
   has(path: string): boolean;
 }
 
@@ -112,7 +113,14 @@ function openEpub(content: Uint8Array): OpenEpub {
     return document_;
   };
 
-  return { entries, read, readText, readDocument, has };
+  const readXml = async (path: string): Promise<Document> => {
+    const text = await readText(path);
+    const document_ = parseXml(text, "application/xml");
+    if (document_.getElementsByTagName("parsererror").length === 0) return document_;
+    return parseXml(text, "text/html");
+  };
+
+  return { entries, read, readText, readDocument, readXml, has };
 }
 
 function findAll(node: Document | Element, localName: string): Element[] {
@@ -439,7 +447,7 @@ export async function parseEpubBook(content: Uint8Array): Promise<EpubBook> {
   const epub = openEpub(content);
   const packagePath = await findPackagePath(epub);
   const directory = directoryOf(packagePath);
-  const opf = await epub.readDocument(packagePath);
+  const opf = await epub.readXml(packagePath);
 
   const manifest = new Map<string, ManifestItem>();
   for (const item of findAll(opf, "item")) {
