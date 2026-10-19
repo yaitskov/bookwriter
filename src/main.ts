@@ -206,29 +206,14 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
   };
 
   const closeBook = (): void => {
-    if (app.isBookClosed()) {
-      messages.add(Warning("No book is open"));
-      return;
-    }
     app.closeBook();
-    bookItemOutput.replaceChildren();
     updateNavMenu();
     if (c2welcome) c2welcome.style.display = "";
-    messages.add(Info("Book closed"));
   };
 
   const goToBookItem = async (index: number, scroll: ScrollTo = ToStart()): Promise<void> => {
-    if (index < 0 || index >= app.openBook.items.length) return;
-    if (index === app.openBookItemRendered) {
-      scroller.apply(scroll);
-      return;
-    }
-    app.openBook.items[app.openBookItemRendered]?.cleanup(bookItemOutput.id);
-    app.openBookItemIndex = index;
-    await app.renderOpenBookItem();
-    app.openBookItemRendered = index;
+    await app.goToBookItem(index, scroll);
     updateNavMenu();
-    scroller.apply(scroll);
   };
 
   const navigateRelative = (delta: number): void => {

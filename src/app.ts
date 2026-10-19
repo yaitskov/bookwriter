@@ -1,5 +1,5 @@
 import type { EpubBook } from "./epub.js";
-import { Messages } from "./messages.js";
+import { Messages, Info, Warning } from "./messages.js";
 import { Scroll, ToAnchor, ToEnd, ToStart, type ScrollTo } from "./scroll-to.js";
 
 export class App {
@@ -33,11 +33,31 @@ export class App {
   }
 
   public closeBook() {
-    if (this.isBookClosed()) return;
+    if (this.isBookClosed()) {
+      this.messages.add(Warning("No book is open"));
+      return;
+    }
+
     this.openBook.items[this.openBookItemRendered]?.cleanup(this.bookItemOutput.id);
     this.openBookBlob = new Uint8Array(0);
     this.openBook = { items: [], media: [], fonts: [], title: "", authors: [] };
     this.openBookItemIndex = -1;
     this.openBookItemRendered = -1;
+
+    this.bookItemOutput.replaceChildren();
+    this.messages.add(Info("Book closed"));
+  }
+
+  public async goToBookItem(index: number, scroll: ScrollTo = ToStart()): Promise<void> {
+    if (index < 0 || index >= this.openBook.items.length) return;
+    if (index === this.openBookItemRendered) {
+      this.scroller.apply(scroll);
+      return;
+    }
+    this.openBook.items[this.openBookItemRendered]?.cleanup(this.bookItemOutput.id);
+    this.openBookItemIndex = index;
+    await this.renderOpenBookItem();
+    this.openBookItemRendered = index;
+    this.scroller.apply(scroll);
   }
 }
