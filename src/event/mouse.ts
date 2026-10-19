@@ -53,6 +53,13 @@ export function bindMouseDoc(doc: Document, win: Window, app: App, messages: Mes
     const anchor = target.closest("a[href]");
     const rawHref = anchor?.getAttribute("href") ?? null;
     app.clickedLink = rawHref ? { href: rawHref, fromIndex: app.openBookItemRendered } : null;
+
+    if (app.clickedLink && (mouseEvent.ctrlKey || mouseEvent.metaKey)) {
+      event.preventDefault();
+      app.followLink();
+      return;
+    }
+
     setFollowLinkVisible(app.clickedLink !== null);
 
     const synonym = target.closest(".synonym");
