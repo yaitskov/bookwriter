@@ -1,17 +1,50 @@
 import type { EpubBook } from "./epub.js";
 import { Messages, Info, Warning } from "./messages.js";
 import { Scroll, ToAnchor, ToEnd, ToStart, type ScrollTo } from "./scroll-to.js";
+import { parseEpubBook } from "./epub.js";
+
+export class AsyncTokenFactory {
+  private counter: number;
+  constructor() {
+    this.counter = 0;
+  }
+  public issue(): AsyncToken {
+    return new AsyncToken(this, ++this.counter);
+  }
+  public isTokenValid(token: AsyncToken): boolean {
+    return token.token === this.counter;
+  }
+}
+
+export class AsyncToken {
+  private factory: AsyncTokenFactory;
+  readonly token: number;
+  constructor(factory: AsyncTokenFactory, token: number) {
+    this.factory = factory;
+    this.token = token;
+  }
+
+  public isValid(): boolean {
+    return this.factory.isTokenValid(this);
+  }
+
+  public onValid(cb : () => void): void {
+    if (this.isValid()) cb();
+  }
+}
 
 export class App {
   public openBookBlob : Uint8Array;
   public openBook : EpubBook;
   public openBookItemIndex : number;
   public openBookItemRendered : number;
+  public readonly tokenFactory : AsyncTokenFactory;
   private messages : Messages;
   private bookItemOutput: HTMLDivElement;
   private scroller: Scroll;
 
   constructor(scroller: Scroll, bookItemOutput: HTMLDivElement, messages : Messages) {
+    this.tokenFactory = new AsyncTokenFactory();
     this.scroller = scroller;
     this.bookItemOutput = bookItemOutput;
     this.messages = messages;
@@ -59,5 +92,24 @@ export class App {
     await this.renderOpenBookItem();
     this.openBookItemRendered = index;
     this.scroller.apply(scroll);
+  }
+
+  public async loadNewBook(bookBytes: Uint8Array, token : AsyncToken) {
+    if (this.openBookItemRendered >= 0) {
+      const previousItem = this.openBook.items[this.openBookItemRendered];
+      if (previousItem) {
+        previousItem.cleanup('#book-content');
+      }
+      this.openBookBlob = new Uint8Array(0);
+      this.openBookItemRendered = -1;
+      this.openBook = { items: [], media: [], fonts: [], title: "", authors: [] };
+    }
+    const book = await parseEpubBook(bookBytes);
+    if (!token.isValid()) return;
+    this.openBookBlob = bookBytes;
+    this.openBook = book;
+    this.openBookItemIndex = 0;
+    await this.renderOpenBookItem();
+    this.openBookItemRendered = 0;
   }
 }

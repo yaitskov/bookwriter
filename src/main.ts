@@ -3,7 +3,6 @@ import { loadBookFile } from "./book-loader.js";
 import { createBulkSynonym, restoreIneligibleSynonyms } from "./bulk-synonym.js";
 import { runBulkSynonym } from "./bulk-run.js";
 import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
-import { parseEpubBook } from "./epub.js";
 import { createKnownWordDictionary } from "./known-word-dictionary.js";
 import { resolveLinkTarget } from "./hyperlink.js";
 import { createLoadingModal } from "./loading-modal.js";
@@ -86,9 +85,9 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
   const loadNewBookBtn = doc.getElementById("load-new-book");
   if (!loadNewBookBtn) return;
 
-  let loadToken = 0;
+
   const cancelLoading = (): void => {
-    loadToken++;
+    app.tokenFactory.issue();
     loadingModal.hide();
   };
   const loadingModal = createLoadingModal({ doc, onCancel: cancelLoading });
@@ -235,34 +234,18 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
 
   loadNewBookBtn.addEventListener("click", () => {
     void loadBookFile({ doc })
-      .then(async (bytes) => {
-        const token = ++loadToken;
+      .then(async (bytes : Uint8Array) => {
+        const token = app.tokenFactory.issue();
         loadingModal.show();
         try {
-          if (app.openBookItemRendered >= 0) {
-            const previousItem = app.openBook.items[app.openBookItemRendered];
-            if (previousItem) {
-              previousItem.cleanup('#book-content');
-            }
-            app.openBookBlob = new Uint8Array(0);
-            app.openBookItemRendered = -1;
-            app.openBook = { items: [], media: [], fonts: [], title: "", authors: [] };
-          }
-          const book = await parseEpubBook(bytes);
-          if (token !== loadToken) return;
-          app.openBookBlob = bytes;
-          app.openBook = book;
-          app.openBookItemIndex = 0;
-          await app.renderOpenBookItem();
-          app.openBookItemRendered = 0;
+          app.loadNewBook(bytes, token);
           updateNavMenu();
           if (c2welcome) c2welcome.style.display = "none";
           const { title, authors } = app.openBook;
           const by = authors.length > 0 ? ` by ${authors.join(", ")}` : "";
           messages.add(Info(`Loaded ${title || "book"}${by}`));
-
         } finally {
-          if (token === loadToken) loadingModal.hide();
+          token.onValid(() => loadingModal.hide());
         }
       })
       .catch((error) => {
