@@ -16,6 +16,15 @@ export class Scroll {
     this.window = win;
   }
 
+  public isWindowAtTop(): boolean {
+    return this.window.scrollY <= 0;
+  }
+
+  public isWindowAtBottom(): boolean {
+    const el = this.document.scrollingElement ?? this.document.documentElement;
+    return this.window.innerHeight + this.window.scrollY >= el.scrollHeight - 1;
+  }
+
   public apply(scroll: ScrollTo): void {
     switch (scroll.kind) {
       case "anchor":

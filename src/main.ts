@@ -119,13 +119,6 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     hideAll();
   };
 
-  const isWindowAtBottom = (): boolean => {
-    const el = doc.scrollingElement ?? doc.documentElement;
-    return window.innerHeight + window.scrollY >= el.scrollHeight - 1;
-  };
-
-  const isWindowAtTop = (): boolean => window.scrollY <= 0;
-
   const onKeydown = (event: KeyboardEvent): void => {
     if (event.key === "Escape") {
       messages.clear();
@@ -148,7 +141,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     }
     if ((event.key === " " || event.key === "Spacebar") && event.shiftKey) {
       if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
-      if (isWindowAtTop()) {
+      if (scroller.isWindowAtTop()) {
         event.preventDefault();
         app.navigateRelative(-1);
       }
@@ -156,7 +149,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     }
     if (event.key === "ArrowUp") {
       if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
-      if (isWindowAtTop()) {
+      if (scroller.isWindowAtTop()) {
         event.preventDefault();
         app.navigateRelative(-1);
       }
@@ -164,7 +157,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     }
     if (event.key === " " || event.key === "Spacebar" || event.key === "ArrowDown") {
       if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
-      if (!isWindowAtBottom()) return;
+      if (!scroller.isWindowAtBottom()) return;
       event.preventDefault();
       app.navigateRelative(1);
       return;
@@ -291,7 +284,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     if (advancing || event.deltaY === 0) return;
     if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
     const next = event.deltaY > 0;
-    if (next ? !isWindowAtBottom() : !isWindowAtTop()) return;
+    if (next ? !scroller.isWindowAtBottom() : !scroller.isWindowAtTop()) return;
     advancing = true;
     app.navigateRelative(next ? 1 : -1);
     window.setTimeout(() => {
