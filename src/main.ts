@@ -32,8 +32,9 @@ function hideAll(): void {
 export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document): void {
   ensureStyles(doc);
   const messages = createMessages(doc);
-  const app = new App(bookItemOutput, messages);
   const scroller = new Scroll(doc);
+  const app = new App(scroller, bookItemOutput, messages);
+
 
   const known = createKnownWordDictionary();
   const unknown = createUnknownWordDictionary();
@@ -198,13 +199,6 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     }
   };
 
-  const renderOpenBookItem = async (): Promise<void> => {
-    const item = app.openBook.items[app.openBookItemIndex];
-    if (!item) return;
-    bookItemOutput.replaceChildren();
-    await item.render(bookItemOutput.id);
-  };
-
   const updateNavMenu = (): void => {
     const hasBook = app.openBook.items.length > 0 && app.openBookItemIndex >= 0;
     navMenu.previousButton.disabled = !hasBook;
@@ -231,7 +225,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     }
     app.openBook.items[app.openBookItemRendered]?.cleanup(bookItemOutput.id);
     app.openBookItemIndex = index;
-    await renderOpenBookItem();
+    await app.renderOpenBookItem();
     app.openBookItemRendered = index;
     updateNavMenu();
     scroller.apply(scroll);
@@ -274,7 +268,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
           app.openBookBlob = bytes;
           app.openBook = book;
           app.openBookItemIndex = 0;
-          await renderOpenBookItem();
+          await app.renderOpenBookItem();
           app.openBookItemRendered = 0;
           updateNavMenu();
           if (c2welcome) c2welcome.style.display = "none";
