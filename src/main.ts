@@ -1,8 +1,9 @@
+import { App } from "./app.js";
 import { loadBookFile } from "./book-loader.js";
 import { createBulkSynonym, restoreIneligibleSynonyms } from "./bulk-synonym.js";
 import { runBulkSynonym } from "./bulk-run.js";
 import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
-import { parseEpubBook, type EpubBook } from "./epub.js";
+import { parseEpubBook } from "./epub.js";
 import { createKnownWordDictionary } from "./known-word-dictionary.js";
 import { resolveLinkTarget } from "./hyperlink.js";
 import { createLoadingModal } from "./loading-modal.js";
@@ -23,19 +24,6 @@ import { applySynonym, restoreAllOccurrences, wrapWord } from "./word-span.js";
 const CAMBRIDGE_BASE = "https://dictionary.cambridge.org/dictionary/english/";
 const thesaurus = createThesaurus();
 
-class App {
-  public openBookBlob : Uint8Array;
-  public openBook : EpubBook;
-  public openBookItemIndex : number;
-  public openBookItemRendered : number;
-  constructor() {
-    this.openBookBlob = new Uint8Array(0);
-    this.openBook = { items: [], media: [], fonts: [], title: "", authors: [] };
-    this.openBookItemIndex = -1;
-    this.openBookItemRendered = -1;
-  }
-}
-
 export type ScrollTo =
   | { readonly kind: "anchor"; readonly anchor: string }
   | { readonly kind: "start" }
@@ -51,7 +39,8 @@ function hideAll(): void {
 
 export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document): void {
   ensureStyles(doc);
-  const app = new App();
+  const messages = createMessages(doc);
+  const app = new App(bookItemOutput, messages);
 
   const known = createKnownWordDictionary();
   const unknown = createUnknownWordDictionary();
@@ -113,7 +102,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
   const unknownMenu = createUnknownMenu(doc);
   const synonymMenu = createSynonymMenu(doc);
   const navMenu = createNavMenu(doc);
-  const messages = createMessages(doc);
+
 
   let clicked: ClickedWord = { word: "", node: null, start: 0, end: 0 };
   let synonymSpan: HTMLSpanElement | null = null;
@@ -230,15 +219,11 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
   };
 
   const closeBook = (): void => {
-    if (app.openBookItemRendered < 0 || app.openBook.items.length === 0) {
+    if (app.isBookClosed()) {
       messages.add(Warning("No book is open"));
       return;
     }
-    app.openBook.items[app.openBookItemRendered]?.cleanup(bookItemOutput.id);
-    app.openBookBlob = new Uint8Array(0);
-    app.openBook = { items: [], media: [], fonts: [], title: "", authors: [] };
-    app.openBookItemIndex = -1;
-    app.openBookItemRendered = -1;
+    app.closeBook();
     bookItemOutput.replaceChildren();
     updateNavMenu();
     if (c2welcome) c2welcome.style.display = "";
