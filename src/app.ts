@@ -7,6 +7,13 @@ import { type LoadingModal } from "./loading-modal.js";
 import { loadBookFile } from "./book-loader.js";
 import { type NavMenu } from "./nav-menu.js";
 import { type SettingsDialog } from "./settings-dialog.js";
+import type { KnownWordDictionary } from "./known-word-dictionary.js";
+import type { UnknownWordDictionary } from "./unknown-word-dictionary.js";
+import type { Thesaurus } from "./thesaurus.js";
+import { wrapWord, applySynonym, restoreAllOccurrences } from "./word-span.js";
+import { extractSentence } from "./sentence.js";
+
+const CAMBRIDGE_BASE = "https://dictionary.cambridge.org/dictionary/english/";
 import { popups, hideAll } from "./menu/popup.js";
 import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
 import { resolveLinkTarget } from "./hyperlink.js";
@@ -31,12 +38,17 @@ export class App {
   public clicked: ClickedWord;
   public clickedLink: ClickedLink | null;
   public synonymSpan: HTMLSpanElement | null;
+  public readonly known: KnownWordDictionary;
+  public readonly unknown: UnknownWordDictionary;
+  public readonly thesaurus: Thesaurus;
 
   constructor(doc: Document, win: Window, tokenFactory: AsyncTokenFactory,
               loadingModal: LoadingModal,
               c2welcome: HTMLElement, navMenu: NavMenu,
               scroller: Scroll, bookItemOutput: HTMLDivElement,
-              messages : Messages, settingsDialog: SettingsDialog) {
+              messages : Messages, settingsDialog: SettingsDialog,
+              known: KnownWordDictionary, unknown: UnknownWordDictionary,
+              thesaurus: Thesaurus) {
     this.clicked =  { word: "", node: null, start: 0, end: 0 };
     this.synonymSpan = null;
     this.clickedLink = null;
@@ -51,6 +63,9 @@ export class App {
     this.scroller = scroller;
     this.bookItemOutput = bookItemOutput;
     this.messages = messages;
+    this.known = known;
+    this.unknown = unknown;
+    this.thesaurus = thesaurus;
     this.openBookBlob = new Uint8Array(0);
     this.openBook = { items: [], media: [], fonts: [], title: "", authors: [] };
     this.openBookItemIndex = -1;
@@ -72,6 +87,40 @@ export class App {
       console.warn(`[link] cannot map "${target.path}" to a book item, ignoring`);
     }
     hideAll();
+  }
+
+  public onUnknownWord(): void {
+    const { word, node } = this.clicked;
+    console.log(word || null);
+    if (!node) return;
+    const span = wrapWord(this.clicked);
+    if (!span) return;
+    this.known.remove(word);
+    this.unknown.add(word);
+    const sentence = extractSentence(span);
+    console.log(sentence);
+    void this.thesaurus
+      .findSynonym(word, sentence)
+      .then((synonym) => {
+        console.log(synonym);
+        applySynonym(span, synonym);
+      })
+      .catch((error) => console.error(error));
+  }
+
+  public onDictionary(): void {
+    if (!this.synonymSpan) return;
+    const word = this.synonymSpan.dataset.originWord ?? this.synonymSpan.textContent ?? "";
+    this.win.open(`${CAMBRIDGE_BASE}${encodeURIComponent(word)}`, "_blank", "noopener");
+  }
+
+  public onRemembered(): void {
+    if (!this.synonymSpan) return;
+    const word = this.synonymSpan.dataset.originWord ?? this.synonymSpan.textContent ?? "";
+    const restored = restoreAllOccurrences(word, this.bookItemOutput);
+    this.unknown.remove(word);
+    this.known.add(word);
+    console.log(`[known] "${word}" restored ${restored} occurrence(s)`);
   }
 
   public updateNavMenu(): void {

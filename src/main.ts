@@ -17,14 +17,12 @@ import { createUnknownMenu } from "./menu/unknown-menu.js";
 import { createUserSettings } from "./settings.js";
 import { createSettingsDialog } from "./settings-dialog.js";
 import { Scroll, ToAnchor, ToStart, type ScrollTo } from "./scroll-to.js";
-import { BLOCK_SELECTOR, extractSentence } from "./sentence.js";
+import { BLOCK_SELECTOR } from "./sentence.js";
 import { ensureStyles } from "./style.js";
 import { createThesaurus } from "./thesaurus.js";
 import { createUnknownWordDictionary } from "./unknown-word-dictionary.js";
 import { bindPersistence } from "./word-dictionary.js";
-import { applySynonym, restoreAllOccurrences, wrapWord } from "./word-span.js";
 
-const CAMBRIDGE_BASE = "https://dictionary.cambridge.org/dictionary/english/";
 const thesaurus = createThesaurus();
 
 
@@ -97,6 +95,9 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     bookItemOutput,
     messages,
     settingsDialog,
+    known,
+    unknown,
+    thesaurus,
   );
   const loadNewBookBtn = getDiv("load-new-book");
   const unknownMenu = createUnknownMenu(doc);
@@ -106,49 +107,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
   navMenu.nextButton.addEventListener("click", () => app.navigateRelative(1));
   loadNewBookBtn.addEventListener("click", () => app.loadNewBookDialog());
 
-  const onUnknownWord = (): void => {
-    const { word, node } = app.clicked;
-    console.log(word || null);
-    if (!node) return;
-    const span = wrapWord(app.clicked);
-    if (!span) return;
-    known.remove(word);
-    unknown.add(word);
-    const sentence = extractSentence(span);
-    console.log(sentence);
-    void thesaurus
-      .findSynonym(word, sentence)
-      .then((synonym) => {
-        console.log(synonym);
-        applySynonym(span, synonym);
-      })
-      .catch((error) => console.error(error));
-  };
-
-  const onDictionary = (): void => {
-    if (!app.synonymSpan) return;
-    const word = app.synonymSpan.dataset.originWord ?? app.synonymSpan.textContent ?? "";
-    window.open(`${CAMBRIDGE_BASE}${encodeURIComponent(word)}`, "_blank", "noopener");
-  };
-
-  const onRemembered = (): void => {
-    if (!app.synonymSpan) return;
-    const word = app.synonymSpan.dataset.originWord ?? app.synonymSpan.textContent ?? "";
-    const restored = restoreAllOccurrences(word, bookItemOutput);
-    unknown.remove(word);
-    known.add(word);
-    console.log(`[known] "${word}" restored ${restored} occurrence(s)`);
-  };
-
-  bindMenus(
-    unknownMenu,
-    synonymMenu,
-    settingsDialog,
-    onUnknownWord,
-    () => app.followLink(),
-    onDictionary,
-    onRemembered,
-  );
+  bindMenus(unknownMenu, synonymMenu, app);
 
   doc.addEventListener("keydown", (event) => handleKeydown(event, app));
   bindMouseDoc(doc, window, app, messages,  unknownMenu, synonymMenu);

@@ -1,20 +1,16 @@
 import type { UnknownMenu } from "../menu/unknown-menu.js";
 import type { SynonymMenu } from "../menu/synonym-menu.js";
-import type { SettingsDialog } from "../settings-dialog.js";
+import type { App } from "../app.js";
 
 export function bindMenus(
   unknownMenu: UnknownMenu,
   synonymMenu: SynonymMenu,
-  settingsDialog: SettingsDialog,
-  onUnknownWord: () => void,
-  onFollowLink: () => void,
-  onDictionary: () => void,
-  onRemembered: () => void,
+  app: App,
 ): void {
   unknownMenu.unknownItem.addEventListener("click", (event: MouseEvent) => {
     event.stopPropagation();
     if (unknownMenu.popup.isOpen()) {
-      onUnknownWord();
+      app.onUnknownWord();
     }
     unknownMenu.popup.hide();
   });
@@ -22,7 +18,7 @@ export function bindMenus(
   const openSettings = (menu: UnknownMenu | SynonymMenu, event: MouseEvent): void => {
     event.stopPropagation();
     menu.popup.hide();
-    settingsDialog.show();
+    app.settingsDialog.show();
   };
 
   unknownMenu.settingsItem.addEventListener("click", (event: MouseEvent) => {
@@ -35,12 +31,12 @@ export function bindMenus(
 
   unknownMenu.followLinkItem.addEventListener("click", (event: MouseEvent) => {
     event.stopPropagation();
-    onFollowLink();
+    app.followLink();
   });
 
   synonymMenu.followLinkItem.addEventListener("click", (event: MouseEvent) => {
     event.stopPropagation();
-    onFollowLink();
+    app.followLink();
   });
 
   unknownMenu.hideItem.addEventListener("click", (event: MouseEvent) => {
@@ -51,7 +47,7 @@ export function bindMenus(
   synonymMenu.dictionaryItem.addEventListener("click", (event: MouseEvent) => {
     event.stopPropagation();
     if (synonymMenu.popup.isOpen()) {
-      onDictionary();
+      app.onDictionary();
     }
     synonymMenu.popup.hide();
   });
@@ -59,7 +55,7 @@ export function bindMenus(
   synonymMenu.rememberedItem.addEventListener("click", (event: MouseEvent) => {
     event.stopPropagation();
     if (synonymMenu.popup.isOpen()) {
-      onRemembered();
+      app.onRemembered();
     }
     synonymMenu.popup.hide();
   });
