@@ -1,5 +1,5 @@
 import { App } from "./app.js";
-import { loadBookFile } from "./book-loader.js";
+import { AsyncTokenFactory, type AsyncToken } from "./async-token.js";
 import { createBulkSynonym, restoreIneligibleSynonyms } from "./bulk-synonym.js";
 import { runBulkSynonym } from "./bulk-run.js";
 import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
@@ -28,13 +28,21 @@ function hideAll(): void {
   for (const popup of popups) popup.hide();
 }
 
+const getDiv = (id : string): HTMLElement => {
+  const d = document.getElementById(id);
+  if (d) return d;
+  throw new ReferenceError(`Tag with id ${id} is not found`);
+
+}
 export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document): void {
   ensureStyles(doc);
   const messages = createMessages(doc);
   const scroller = new Scroll(doc);
-  const app = new App(scroller, bookItemOutput, messages);
-
-
+  const navMenu = createNavMenu(doc);
+  const c2welcome = getDiv("c2-welcome");
+  const loadingModal = createLoadingModal({ doc, onCancel: () => tokenFactory.issue() });
+  const tokenFactory = new AsyncTokenFactory();
+  const app = new App(doc, tokenFactory, loadingModal, c2welcome, navMenu, scroller, bookItemOutput, messages);
   const known = createKnownWordDictionary();
   const unknown = createUnknownWordDictionary();
   bindPersistence(known, window, doc);
@@ -79,22 +87,9 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     onApply: applyMaximumTriggerWordFrequency,
     doc,
   });
-
-  const c2welcome = doc.getElementById("c2-welcome");
-
-  const loadNewBookBtn = doc.getElementById("load-new-book");
-  if (!loadNewBookBtn) return;
-
-
-  const cancelLoading = (): void => {
-    app.tokenFactory.issue();
-    loadingModal.hide();
-  };
-  const loadingModal = createLoadingModal({ doc, onCancel: cancelLoading });
-
+  const loadNewBookBtn = getDiv("load-new-book");
   const unknownMenu = createUnknownMenu(doc);
   const synonymMenu = createSynonymMenu(doc);
-  const navMenu = createNavMenu(doc);
 
 
   let clicked: ClickedWord = { word: "", node: null, start: 0, end: 0 };
@@ -135,7 +130,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     if (event.key === "Escape") {
       messages.clear();
       if (loadingModal.isOpen()) {
-        cancelLoading();
+        loadingModal.cancelLoading();
         return;
       }
       if (settingsDialog.isOpen()) {
@@ -198,21 +193,12 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     }
   };
 
-  const updateNavMenu = (): void => {
-    const hasBook = app.openBook.items.length > 0 && app.openBookItemIndex >= 0;
-    navMenu.previousButton.disabled = !hasBook;
-    navMenu.nextButton.disabled = !hasBook;
-  };
-
   const closeBook = (): void => {
     app.closeBook();
-    updateNavMenu();
-    if (c2welcome) c2welcome.style.display = "";
   };
 
   const goToBookItem = async (index: number, scroll: ScrollTo = ToStart()): Promise<void> => {
     await app.goToBookItem(index, scroll);
-    updateNavMenu();
   };
 
   const navigateRelative = (delta: number): void => {
@@ -232,26 +218,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     navigateRelative(1);
   });
 
-  loadNewBookBtn.addEventListener("click", () => {
-    void loadBookFile({ doc })
-      .then(async (bytes : Uint8Array) => {
-        const token = app.tokenFactory.issue();
-        loadingModal.show();
-        try {
-          app.loadNewBook(bytes, token);
-          updateNavMenu();
-          if (c2welcome) c2welcome.style.display = "none";
-          const { title, authors } = app.openBook;
-          const by = authors.length > 0 ? ` by ${authors.join(", ")}` : "";
-          messages.add(Info(`Loaded ${title || "book"}${by}`));
-        } finally {
-          token.onValid(() => loadingModal.hide());
-        }
-      })
-      .catch((error) => {
-        console.error("failed to open book", error);
-      });
-  });
+  loadNewBookBtn.addEventListener("click", () => app.loadNewBookDialog());
 
   unknownMenu.unknownItem.addEventListener("click", (event: MouseEvent) => {
     event.stopPropagation();

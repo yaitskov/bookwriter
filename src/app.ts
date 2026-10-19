@@ -3,6 +3,9 @@ import { AsyncTokenFactory, type AsyncToken } from "./async-token.js";
 import { Messages, Info, Warning } from "./messages.js";
 import { Scroll, ToAnchor, ToEnd, ToStart, type ScrollTo } from "./scroll-to.js";
 import { parseEpubBook } from "./epub.js";
+import { type LoadingModal } from "./loading-modal.js";
+import { loadBookFile } from "./book-loader.js";
+import { type NavMenu } from "./nav-menu.js";
 
 export class App {
   public openBookBlob : Uint8Array;
@@ -13,9 +16,21 @@ export class App {
   private messages : Messages;
   private bookItemOutput: HTMLDivElement;
   private scroller: Scroll;
+  private c2welcome: HTMLElement;
+  private navMenu: NavMenu;
+  private loadingModal: LoadingModal;
+  private doc: Document;
 
-  constructor(scroller: Scroll, bookItemOutput: HTMLDivElement, messages : Messages) {
-    this.tokenFactory = new AsyncTokenFactory();
+  constructor(doc: Document, tokenFactory: AsyncTokenFactory,
+              loadingModal: LoadingModal,
+              c2welcome: HTMLElement, navMenu: NavMenu,
+              scroller: Scroll, bookItemOutput: HTMLDivElement,
+              messages : Messages) {
+    this.doc = doc;
+    this.loadingModal = loadingModal;
+    this.c2welcome = c2welcome;
+    this.navMenu = navMenu;
+    this.tokenFactory = tokenFactory;
     this.scroller = scroller;
     this.bookItemOutput = bookItemOutput;
     this.messages = messages;
@@ -24,6 +39,12 @@ export class App {
     this.openBookItemIndex = -1;
     this.openBookItemRendered = -1;
   }
+
+  public updateNavMenu(): void {
+    const hasBook = this.openBook.items.length > 0 && this.openBookItemIndex >= 0;
+    this.navMenu.previousButton.disabled = !hasBook;
+    this.navMenu.nextButton.disabled = !hasBook;
+  };
 
   public isBookClosed() {
     return this.openBookItemRendered < 0 || this.openBook.items.length === 0;
@@ -50,6 +71,9 @@ export class App {
 
     this.bookItemOutput.replaceChildren();
     this.messages.add(Info("Book closed"));
+
+    this.updateNavMenu();
+    this.c2welcome.style.display = "";
   }
 
   public async goToBookItem(index: number, scroll: ScrollTo = ToStart()): Promise<void> {
@@ -63,6 +87,28 @@ export class App {
     await this.renderOpenBookItem();
     this.openBookItemRendered = index;
     this.scroller.apply(scroll);
+    this.updateNavMenu();
+  }
+
+  public loadNewBookDialog() {
+    loadBookFile({ doc: this.doc })
+      .then(async (bytes : Uint8Array) => {
+        const token = this.tokenFactory.issue();
+        this.loadingModal.show();
+        try {
+          await this.loadNewBook(bytes, token);
+          this.updateNavMenu();
+          this.c2welcome.style.display = "none";
+          const { title, authors } = this.openBook;
+          const by = authors.length > 0 ? ` by ${authors.join(", ")}` : "";
+          this.messages.add(Info(`Loaded ${title || "book"}${by}`));
+        } finally {
+          token.onValid(() => this.loadingModal.hide());
+        }
+      })
+      .catch((error) => {
+        console.error("failed to open book", error);
+      });
   }
 
   public async loadNewBook(bookBytes: Uint8Array, token : AsyncToken) {

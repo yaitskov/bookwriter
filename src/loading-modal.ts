@@ -8,6 +8,7 @@ export interface LoadingModal {
   element: HTMLDivElement;
   show(): void;
   hide(): void;
+  cancelLoading(): void;
   isOpen(): boolean;
 }
 
@@ -46,14 +47,14 @@ export function createLoadingModal(options: LoadingModalOptions = {}): LoadingMo
   const hide = (): void => {
     backdrop.style.display = "none";
     open = false;
+    options.onCancel?.();
   };
 
-  cancelButton.addEventListener("click", () => {
-    options.onCancel?.();
-  });
+  cancelButton.addEventListener("click", () => hide());
 
   return {
     element: backdrop,
+    cancelLoading: hide,
     show,
     hide,
     isOpen: () => open,
