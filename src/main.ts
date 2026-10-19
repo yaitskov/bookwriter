@@ -14,6 +14,7 @@ import { createSynonymMenu } from "./menu/synonym-menu.js";
 import { createUnknownMenu } from "./menu/unknown-menu.js";
 import { createUserSettings } from "./settings.js";
 import { createSettingsDialog } from "./settings-dialog.js";
+import { Scroll, ToAnchor, ToEnd, ToStart, type ScrollTo } from "./scroll-to.js";
 import { BLOCK_SELECTOR, extractSentence } from "./sentence.js";
 import { ensureStyles } from "./style.js";
 import { createThesaurus } from "./thesaurus.js";
@@ -24,15 +25,6 @@ import { applySynonym, restoreAllOccurrences, wrapWord } from "./word-span.js";
 const CAMBRIDGE_BASE = "https://dictionary.cambridge.org/dictionary/english/";
 const thesaurus = createThesaurus();
 
-export type ScrollTo =
-  | { readonly kind: "anchor"; readonly anchor: string }
-  | { readonly kind: "start" }
-  | { readonly kind: "end" };
-
-export const ToAnchor = (anchor: string): ScrollTo => ({ kind: "anchor", anchor });
-export const ToStart = (): ScrollTo => ({ kind: "start" });
-export const ToEnd = (): ScrollTo => ({ kind: "end" });
-
 function hideAll(): void {
   for (const popup of popups) popup.hide();
 }
@@ -41,6 +33,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
   ensureStyles(doc);
   const messages = createMessages(doc);
   const app = new App(bookItemOutput, messages);
+  const scroller = new Scroll(doc);
 
   const known = createKnownWordDictionary();
   const unknown = createUnknownWordDictionary();
@@ -230,45 +223,10 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     messages.add(Info("Book closed"));
   };
 
-  const scrollToAnchor = (anchor: string): void => {
-    const byId = doc.getElementById(anchor);
-    const target =
-      byId && bookItemOutput.contains(byId)
-        ? byId
-        : Array.from(bookItemOutput.querySelectorAll<HTMLAnchorElement>("a[name]")).find(
-            (a) => a.getAttribute("name") === anchor,
-          );
-    if (target) {
-      target.scrollIntoView();
-    } else {
-      console.warn(`[link] anchor "#${anchor}" not found`);
-      window.scrollTo(0, 0);
-    }
-  };
-
-  const scrollToEnd = (): void => {
-    const el = doc.scrollingElement ?? doc.documentElement;
-    window.scrollTo(0, el.scrollHeight);
-  };
-
-  const applyScrollTo = (scroll: ScrollTo): void => {
-    switch (scroll.kind) {
-      case "anchor":
-        scrollToAnchor(scroll.anchor);
-        break;
-      case "start":
-        window.scrollTo(0, 0);
-        break;
-      case "end":
-        scrollToEnd();
-        break;
-    }
-  };
-
   const goToBookItem = async (index: number, scroll: ScrollTo = ToStart()): Promise<void> => {
     if (index < 0 || index >= app.openBook.items.length) return;
     if (index === app.openBookItemRendered) {
-      applyScrollTo(scroll);
+      scroller.apply(scroll);
       return;
     }
     app.openBook.items[app.openBookItemRendered]?.cleanup(bookItemOutput.id);
@@ -276,7 +234,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     await renderOpenBookItem();
     app.openBookItemRendered = index;
     updateNavMenu();
-    applyScrollTo(scroll);
+    scroller.apply(scroll);
   };
 
   const navigateRelative = (delta: number): void => {
