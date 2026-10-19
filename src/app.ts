@@ -7,6 +7,7 @@ import { type LoadingModal } from "./loading-modal.js";
 import { loadBookFile } from "./book-loader.js";
 import { type NavMenu } from "./nav-menu.js";
 import { type SettingsDialog } from "./settings-dialog.js";
+import { type HelpDialog } from "./help-dialog.js";
 import type { KnownWordDictionary } from "./known-word-dictionary.js";
 import type { UnknownWordDictionary } from "./unknown-word-dictionary.js";
 import type { Thesaurus } from "./thesaurus.js";
@@ -27,6 +28,7 @@ export class App {
   public openBookItemRendered : number;
   public readonly tokenFactory : AsyncTokenFactory;
   public readonly settingsDialog: SettingsDialog;
+  public readonly helpDialog: HelpDialog;
   public readonly messages : Messages;
   private bookItemOutput: HTMLDivElement;
   public readonly scroller: Scroll;
@@ -47,6 +49,7 @@ export class App {
               c2welcome: HTMLElement, navMenu: NavMenu,
               scroller: Scroll, bookItemOutput: HTMLDivElement,
               messages : Messages, settingsDialog: SettingsDialog,
+              helpDialog: HelpDialog,
               known: KnownWordDictionary, unknown: UnknownWordDictionary,
               thesaurus: Thesaurus) {
     this.clicked =  { word: "", node: null, start: 0, end: 0 };
@@ -60,6 +63,7 @@ export class App {
     this.navMenu = navMenu;
     this.tokenFactory = tokenFactory;
     this.settingsDialog = settingsDialog;
+    this.helpDialog = helpDialog;
     this.scroller = scroller;
     this.bookItemOutput = bookItemOutput;
     this.messages = messages;

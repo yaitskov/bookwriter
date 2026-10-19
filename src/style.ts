@@ -127,6 +127,71 @@ export function ensureStyles(doc: Document = document): void {
     .settings-dialog .settings-apply:hover:enabled {
       background: #2a5f96;
     }
+    .help-dialog-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 10001;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.35);
+      font: 14px system-ui, sans-serif;
+    }
+    .help-dialog {
+      min-width: 340px;
+      max-width: 90vw;
+      max-height: 85vh;
+      overflow: auto;
+      background: #fff;
+      border: 1px solid #d0d0d0;
+      border-radius: 6px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      padding: 16px 20px;
+      color: #222;
+    }
+    .help-dialog h2 {
+      margin: 0 0 12px;
+      font-size: 15px;
+    }
+    .help-dialog h3 {
+      margin: 12px 0 6px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #666;
+    }
+    .help-dialog .shortcut-list {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 4px 16px;
+      margin: 0;
+    }
+    .help-dialog .shortcut-keys {
+      margin: 0;
+      white-space: nowrap;
+      font: 12px ui-monospace, monospace;
+      color: #2b6cb0;
+    }
+    .help-dialog .shortcut-action {
+      margin: 0;
+      color: #444;
+    }
+    .help-dialog .help-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 16px;
+    }
+    .help-dialog button {
+      padding: 6px 14px;
+      border: 1px solid #d0d0d0;
+      border-radius: 4px;
+      background: #fff;
+      cursor: pointer;
+      font: inherit;
+    }
+    .help-dialog button:hover {
+      background: #f0f0f0;
+    }
     .loading-modal-backdrop {
       position: fixed;
       inset: 0;

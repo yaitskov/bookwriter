@@ -28,7 +28,8 @@ export function bindMouseDoc(doc: Document, win: Window, app: App, messages: Mes
   let advancing = false;
   const onWheel = (event: WheelEvent): void => {
     if (advancing || event.deltaY === 0) return;
-    if (app.loadingModal.isOpen() || app.settingsDialog.isOpen()) return;
+    if (app.loadingModal.isOpen() || app.settingsDialog.isOpen() || app.helpDialog.isOpen())
+      return;
     const next = event.deltaY > 0;
     if (next ? !app.scroller.isWindowAtBottom() : !app.scroller.isWindowAtTop()) return;
     advancing = true;

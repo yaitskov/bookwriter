@@ -3,7 +3,8 @@ import { ToAnchor, ToStart } from "../scroll-to.js";
 import { hideAll } from "../menu/popup.js";
 
 export function handleKeydown(event: KeyboardEvent, app: App): void {
-  const isModalOpen = (): boolean => app.loadingModal.isOpen() || app.settingsDialog.isOpen();
+  const isModalOpen = (): boolean =>
+    app.loadingModal.isOpen() || app.settingsDialog.isOpen() || app.helpDialog.isOpen();
 
   if (event.key === "Escape") {
     app.messages.clear();
@@ -13,6 +14,10 @@ export function handleKeydown(event: KeyboardEvent, app: App): void {
     }
     if (app.settingsDialog.isOpen()) {
       app.settingsDialog.hide();
+      return;
+    }
+    if (app.helpDialog.isOpen()) {
+      app.helpDialog.hide();
       return;
     }
     hideAll();
@@ -58,6 +63,12 @@ export function handleKeydown(event: KeyboardEvent, app: App): void {
     if (event.repeat) return;
     if (isModalOpen()) return;
     app.loadNewBookDialog();
+    return;
+  }
+  if (key === "h" || key === "k") {
+    if (event.repeat) return;
+    if (isModalOpen()) return;
+    app.helpDialog.show();
     return;
   }
   if (key !== "c") return;

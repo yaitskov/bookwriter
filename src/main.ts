@@ -6,6 +6,7 @@ import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
 import { handleKeydown } from "./event/keydown.js";
 import { bindMouseDoc } from "./event/mouse.js";
 import { bindMenus } from "./event/menu.js";
+import { createHelpDialog } from "./help-dialog.js";
 import { createKnownWordDictionary } from "./known-word-dictionary.js";
 import { resolveLinkTarget } from "./hyperlink.js";
 import { createLoadingModal } from "./loading-modal.js";
@@ -84,6 +85,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     onApply: applyMaximumTriggerWordFrequency,
     doc,
   });
+  const helpDialog = createHelpDialog({ doc });
   const app = new App(
     doc,
     window,
@@ -95,17 +97,20 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     bookItemOutput,
     messages,
     settingsDialog,
+    helpDialog,
     known,
     unknown,
     thesaurus,
   );
   const loadNewBookBtn = getDiv("load-new-book");
+  const showHelpBtn = getDiv("show-help");
   const unknownMenu = createUnknownMenu(doc);
   const synonymMenu = createSynonymMenu(doc);
 
   navMenu.previousButton.addEventListener("click", () => app.navigateRelative(-1));
   navMenu.nextButton.addEventListener("click", () => app.navigateRelative(1));
   loadNewBookBtn.addEventListener("click", () => app.loadNewBookDialog());
+  showHelpBtn.addEventListener("click", () => app.helpDialog.show());
 
   bindMenus(unknownMenu, synonymMenu, app);
 
