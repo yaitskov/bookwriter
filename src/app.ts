@@ -57,6 +57,11 @@ export class App {
     await item.render(this.bookItemOutput.id);
   }
 
+  public closeBookIfOpen() {
+    if (this.isBookClosed()) return;
+    this.closeBook();
+  }
+
   public closeBook() {
     if (this.isBookClosed()) {
       this.messages.add(Warning("No book is open"));
@@ -112,15 +117,7 @@ export class App {
   }
 
   public async loadNewBook(bookBytes: Uint8Array, token : AsyncToken) {
-    if (this.openBookItemRendered >= 0) {
-      const previousItem = this.openBook.items[this.openBookItemRendered];
-      if (previousItem) {
-        previousItem.cleanup('#book-content');
-      }
-      this.openBookBlob = new Uint8Array(0);
-      this.openBookItemRendered = -1;
-      this.openBook = { items: [], media: [], fonts: [], title: "", authors: [] };
-    }
+    this.closeBookIfOpen();
     const book = await parseEpubBook(bookBytes);
     if (!token.isValid()) return;
     this.openBookBlob = bookBytes;

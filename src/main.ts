@@ -176,6 +176,12 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
       closeBook();
       return;
     }
+    if (key === "o") {
+      if (event.repeat) return;
+      if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
+      app.loadNewBookDialog();
+      return;
+    }
     if (key !== "c") return;
     if (loadingModal.isOpen() || settingsDialog.isOpen()) return;
     const target = app.openBook.navigationTarget;
