@@ -4,12 +4,13 @@ import { createBulkSynonym, restoreIneligibleSynonyms } from "./bulk-synonym.js"
 import { runBulkSynonym } from "./bulk-run.js";
 import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
 import { handleKeydown } from "./event/keydown.js";
+import { bindMenus } from "./event/menu.js";
 import { createKnownWordDictionary } from "./known-word-dictionary.js";
 import { resolveLinkTarget } from "./hyperlink.js";
 import { createLoadingModal } from "./loading-modal.js";
 import { createMessages, Info, Warning } from "./messages.js";
 import { createNavMenu } from "./nav-menu.js";
-import { popups, type Popup } from "./menu/popup.js";
+import { popups } from "./menu/popup.js";
 import { createSynonymMenu } from "./menu/synonym-menu.js";
 import { createUnknownMenu } from "./menu/unknown-menu.js";
 import { createUserSettings } from "./settings.js";
@@ -145,80 +146,49 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
   navMenu.nextButton.addEventListener("click", () => app.navigateRelative(1));
   loadNewBookBtn.addEventListener("click", () => app.loadNewBookDialog());
 
-  unknownMenu.unknownItem.addEventListener("click", (event: MouseEvent) => {
-    event.stopPropagation();
-    if (unknownMenu.popup.isOpen()) {
-      const { word, node } = clicked;
-      console.log(word || null);
-      if (node) {
-        const span = wrapWord(clicked);
-        if (span) {
-          known.remove(word);
-          unknown.add(word);
-          const sentence = extractSentence(span);
-          console.log(sentence);
-          void thesaurus
-            .findSynonym(word, sentence)
-            .then((synonym) => {
-              console.log(synonym);
-              applySynonym(span, synonym);
-            })
-            .catch((error) => console.error(error));
-        }
-      }
-    }
-    unknownMenu.popup.hide();
-  });
-
-  const openSettings = (menu: Popup, event: MouseEvent): void => {
-    event.stopPropagation();
-    menu.hide();
-    settingsDialog.show();
+  const onUnknownWord = (): void => {
+    const { word, node } = clicked;
+    console.log(word || null);
+    if (!node) return;
+    const span = wrapWord(clicked);
+    if (!span) return;
+    known.remove(word);
+    unknown.add(word);
+    const sentence = extractSentence(span);
+    console.log(sentence);
+    void thesaurus
+      .findSynonym(word, sentence)
+      .then((synonym) => {
+        console.log(synonym);
+        applySynonym(span, synonym);
+      })
+      .catch((error) => console.error(error));
   };
 
-  unknownMenu.settingsItem.addEventListener("click", (event: MouseEvent) => {
-    openSettings(unknownMenu.popup, event);
-  });
+  const onDictionary = (): void => {
+    if (!synonymSpan) return;
+    const word = synonymSpan.dataset.originWord ?? synonymSpan.textContent ?? "";
+    window.open(`${CAMBRIDGE_BASE}${encodeURIComponent(word)}`, "_blank", "noopener");
+  };
 
-  synonymMenu.settingsItem.addEventListener("click", (event: MouseEvent) => {
-    openSettings(synonymMenu.popup, event);
-  });
+  const onRemembered = (): void => {
+    if (!synonymSpan) return;
+    const word = synonymSpan.dataset.originWord ?? synonymSpan.textContent ?? "";
+    const restored = restoreAllOccurrences(word, bookItemOutput);
+    unknown.remove(word);
+    known.add(word);
+    console.log(`[known] "${word}" restored ${restored} occurrence(s)`);
+  };
 
-  unknownMenu.followLinkItem.addEventListener("click", (event: MouseEvent) => {
-    event.stopPropagation();
-    followLink();
-  });
-
-  synonymMenu.followLinkItem.addEventListener("click", (event: MouseEvent) => {
-    event.stopPropagation();
-    followLink();
-  });
-
-  unknownMenu.hideItem.addEventListener("click", (event: MouseEvent) => {
-    event.stopPropagation();
-    unknownMenu.popup.hide();
-  });
-
-  synonymMenu.dictionaryItem.addEventListener("click", (event: MouseEvent) => {
-    event.stopPropagation();
-    if (synonymMenu.popup.isOpen() && synonymSpan) {
-      const word = synonymSpan.dataset.originWord ?? synonymSpan.textContent ?? "";
-      window.open(`${CAMBRIDGE_BASE}${encodeURIComponent(word)}`, "_blank", "noopener");
-    }
-    synonymMenu.popup.hide();
-  });
-
-  synonymMenu.rememberedItem.addEventListener("click", (event: MouseEvent) => {
-    event.stopPropagation();
-    if (synonymMenu.popup.isOpen() && synonymSpan) {
-      const word = synonymSpan.dataset.originWord ?? synonymSpan.textContent ?? "";
-      const restored = restoreAllOccurrences(word, bookItemOutput);
-      unknown.remove(word);
-      known.add(word);
-      console.log(`[known] "${word}" restored ${restored} occurrence(s)`);
-    }
-    synonymMenu.popup.hide();
-  });
+  bindMenus(
+    unknownMenu,
+    synonymMenu,
+    settingsDialog,
+    onUnknownWord,
+    followLink,
+    onDictionary,
+    onRemembered,
+  );
 
   let advancing = false;
   const onWheel = (event: WheelEvent): void => {
