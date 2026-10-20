@@ -195,44 +195,36 @@ export class App {
     );
   }
 
-  public loadNewBookDialog() {
-    loadBookFile({ doc: this.doc })
-      .then(async (bytes : Uint8Array<ArrayBuffer>) => {
-        const token = this.tokenFactory.issue();
-        this.loadingModal.show();
-        try {
-          await this.loadNewBook(bytes, token);
-          this.updateNavMenu();
-          this.c2welcome.style.display = "none";
-          const { title, authors } = this.openBook;
-          const by = authors.length > 0 ? ` by ${authors.join(", ")}` : "";
-          this.messages.add(Info(`Loaded ${title || "book"}${by}`));
-        } finally {
-          token.onValid(() => this.loadingModal.hide());
-        }
-      })
-      .catch((error) => {
-        console.error("failed to open book", error);
-      });
+  private async openBookFromBytes(bookBytes: Uint8Array<ArrayBuffer>, token: AsyncToken): Promise<void> {
+    await this.loadNewBook(bookBytes, token);
+    this.updateNavMenu();
+    this.c2welcome.style.display = "none";
+    const { title, authors } = this.openBook;
+    const by = authors.length > 0 ? ` by ${authors.join(", ")}` : "";
+    this.messages.add(Info(`Loaded ${title || "book"}${by}`));
+  }
+
+  private openBookWith(
+    load: () => Promise<Uint8Array<ArrayBuffer>>,
+    tag: string,
+  ): void {
+    const token = this.tokenFactory.issue();
+    this.loadingModal.show();
+    load()
+      .then((bytes) => this.openBookFromBytes(bytes, token))
+      .catch((error) => console.error(`failed to open book [${tag}]`, error))
+      .finally(() => token.onValid(() => this.loadingModal.hide()));
+  }
+
+  public loadNewBookDialog(): void {
+    this.openBookWith(() => loadBookFile({ doc: this.doc }), "file");
   }
 
   public openBookFromLibrary(contentSha: Sha1): void {
-    const token = this.tokenFactory.issue();
-    this.loadingModal.show();
-    this.library
-      .getBookContent(contentSha)
-      .then((bytes) => this.loadNewBook(bytes as Uint8Array<ArrayBuffer>, token))
-      .then(() => {
-        this.updateNavMenu();
-        this.c2welcome.style.display = "none";
-        const { title, authors } = this.openBook;
-        const by = authors.length > 0 ? ` by ${authors.join(", ")}` : "";
-        this.messages.add(Info(`Loaded ${title || "book"}${by}`));
-      })
-      .catch((error) => {
-        console.error("[library] failed to open book", error);
-      })
-      .finally(() => token.onValid(() => this.loadingModal.hide()));
+    this.openBookWith(
+      () => this.library.getBookContent(contentSha) as Promise<Uint8Array<ArrayBuffer>>,
+      "library",
+    );
   }
 
   public async loadNewBook(bookBytes: Uint8Array<ArrayBuffer>, token : AsyncToken) {

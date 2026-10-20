@@ -16,6 +16,7 @@
 - OOP
 - OOAD
 - patterns (Flyweight, Composite, Decorator, Bridge, Facade, Factory method etc.)
+### avoid copypaste - generarize similar code snippets
 
 ## Don't read
 - word-frequency-table.ts
