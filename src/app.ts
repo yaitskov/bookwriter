@@ -267,6 +267,7 @@ export class App {
       .addBook(book, bookBytes)
       .then((record) => {
         this.openBookSha1 = record.bookContentHash;
+        this.onLibraryChanged?.();
       })
       .catch((error) =>
         console.error("[library] failed to store opened book", error),
