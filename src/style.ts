@@ -323,11 +323,19 @@ export function ensureStyles(doc: Document = document): void {
       flex: 1 1 auto;
     }
     .book-library {
+      padding: 12px 0;
+      font: 14px system-ui, sans-serif;
+    }
+    .book-library-title {
+      margin: 0 0 8px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #222;
+    }
+    .book-library-cards {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
-      padding: 12px 0;
-      font: 14px system-ui, sans-serif;
     }
     .book-card {
       display: flex;

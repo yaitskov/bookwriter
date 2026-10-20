@@ -65,16 +65,25 @@ export function createBookLibraryView(
   const { target, library, onOpenBook, onOpenNewBook } = options;
   const doc = options.doc ?? document;
 
-  const element = doc.createElement("div");
-  element.className = "book-library";
-  target.append(element);
+  const panel = doc.createElement("div");
+  panel.className = "book-library";
+
+  const title = doc.createElement("h2");
+  title.className = "book-library-title";
+
+  const cards = doc.createElement("div");
+  cards.className = "book-library-cards";
+
+  panel.append(title, cards);
+  target.append(panel);
 
   const render = (records: LibraryBookRecord[]): void => {
     const ordered = sortByUploadDesc(records);
-    const cards = ordered.length > 0
+    title.textContent = `Your library (${ordered.length})`;
+    const cardElements = ordered.length > 0
       ? ordered.map((record) => createCard(doc, record, onOpenBook))
       : [createEmptyCard(doc, onOpenNewBook)];
-    element.replaceChildren(...cards);
+    cards.replaceChildren(...cardElements);
   };
 
   const refresh = async (): Promise<void> => {
@@ -87,5 +96,5 @@ export function createBookLibraryView(
 
   void refresh();
 
-  return { element, refresh };
+  return { element: panel, refresh };
 }
