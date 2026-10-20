@@ -2,12 +2,17 @@ import { Sha1 } from "../util/hash.js";
 
 export { Sha1 };
 
+export const CONTENT = "content";
+export const META = "meta";
+
 export interface DB {
   store(blob: Uint8Array<ArrayBuffer>): Promise<Sha1>;
   loadBySha1(key: Sha1): Promise<Uint8Array>;
+  putRecord(table: string, key: Sha1, record: unknown): Promise<void>;
+  getRecord<T>(table: string, key: Sha1): Promise<T | undefined>;
+  listSha1s(table: string): Promise<Sha1[]>;
+  removeRecords(tables: string[], key: Sha1): Promise<void>;
 }
-
-const BLOBS = "blobs";
 
 function requestToPromise<T>(request: IDBRequest<T>): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -18,13 +23,27 @@ function requestToPromise<T>(request: IDBRequest<T>): Promise<T> {
   });
 }
 
+function transactionDone(transaction: IDBTransaction): Promise<void> {
+  return new Promise((resolve, reject) => {
+    transaction.addEventListener("complete", () => resolve());
+    transaction.addEventListener("error", () =>
+      reject(transaction.error ?? new Error("[sql] transaction failed")),
+    );
+    transaction.addEventListener("abort", () =>
+      reject(transaction.error ?? new Error("[sql] transaction aborted")),
+    );
+  });
+}
+
 function openDatabase(dbName: string): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(dbName);
     request.addEventListener("upgradeneeded", () => {
       const database = request.result;
-      if (!database.objectStoreNames.contains(BLOBS)) {
-        database.createObjectStore(BLOBS);
+      for (const table of [CONTENT, META]) {
+        if (!database.objectStoreNames.contains(table)) {
+          database.createObjectStore(table);
+        }
       }
     });
     request.addEventListener("success", () => resolve(request.result));
@@ -46,21 +65,58 @@ class SqlDb implements DB {
   async store(blob: Uint8Array<ArrayBuffer>): Promise<Sha1> {
     const sha1 = await Sha1.fromBytes(blob);
     const database = await this.database;
-    const transaction = database.transaction(BLOBS, "readwrite");
-    await requestToPromise(transaction.objectStore(BLOBS).put(blob, sha1.hex));
+    const transaction = database.transaction([CONTENT], "readwrite");
+    transaction.objectStore(CONTENT).put(blob, sha1.hex);
+    await transactionDone(transaction);
     return sha1;
   }
 
   async loadBySha1(key: Sha1): Promise<Uint8Array> {
     const database = await this.database;
-    const transaction = database.transaction(BLOBS, "readonly");
+    const transaction = database.transaction([CONTENT], "readonly");
     const result = await requestToPromise<unknown>(
-      transaction.objectStore(BLOBS).get(key.hex),
+      transaction.objectStore(CONTENT).get(key.hex),
     );
     if (!(result instanceof Uint8Array)) {
       throw new Error(`[sql] blob not found: ${key}`);
     }
     return result;
+  }
+
+  async putRecord(table: string, key: Sha1, record: unknown): Promise<void> {
+    const database = await this.database;
+    const transaction = database.transaction([table], "readwrite");
+    transaction.objectStore(table).put(record, key.hex);
+    await transactionDone(transaction);
+  }
+
+  async getRecord<T>(table: string, key: Sha1): Promise<T | undefined> {
+    const database = await this.database;
+    const transaction = database.transaction([table], "readonly");
+    const result = await requestToPromise<unknown>(
+      transaction.objectStore(table).get(key.hex),
+    );
+    return result as T | undefined;
+  }
+
+  async listSha1s(table: string): Promise<Sha1[]> {
+    const database = await this.database;
+    const transaction = database.transaction([table], "readonly");
+    const keys = await requestToPromise<IDBValidKey[]>(
+      transaction.objectStore(table).getAllKeys(),
+    );
+    return keys
+      .filter((key): key is string => typeof key === "string")
+      .map((key) => Sha1.fromHex(key));
+  }
+
+  async removeRecords(tables: string[], key: Sha1): Promise<void> {
+    const database = await this.database;
+    const transaction = database.transaction(tables, "readwrite");
+    for (const table of tables) {
+      transaction.objectStore(table).delete(key.hex);
+    }
+    await transactionDone(transaction);
   }
 }
 
