@@ -1,6 +1,6 @@
 import type { EpubBook } from "./epub.js";
 import { AsyncTokenFactory, type AsyncToken } from "./async-token.js";
-import { Messages, Info, Warning } from "./messages.js";
+import { Messages, Info, Warning, Error } from "./messages.js";
 import { Scroll, ToAnchor, ToEnd, ToStart, type ScrollTo } from "./scroll-to.js";
 import { parseEpubBook } from "./epub.js";
 import { type LoadingModal } from "./loading-modal.js";
@@ -8,6 +8,7 @@ import { loadBookFile } from "./book-loader.js";
 import { type NavMenu } from "./nav-menu.js";
 import { type SettingsDialog } from "./settings-dialog.js";
 import { type HelpDialog } from "./help-dialog.js";
+import { type ConfirmDialog } from "./confirm-dialog.js";
 import type { KnownWordDictionary } from "./known-word-dictionary.js";
 import type { UnknownWordDictionary } from "./unknown-word-dictionary.js";
 import type { Thesaurus } from "./thesaurus.js";
@@ -26,11 +27,14 @@ export type ClickedLink = { href: string; fromIndex: number }
 export class App {
   public openBookBlob : Uint8Array;
   public openBook : EpubBook;
+  public openBookSha1 : Sha1 | null;
   public openBookItemIndex : number;
   public openBookItemRendered : number;
   public readonly tokenFactory : AsyncTokenFactory;
   public readonly settingsDialog: SettingsDialog;
   public readonly helpDialog: HelpDialog;
+  public readonly confirmDialog: ConfirmDialog;
+  public onLibraryChanged?: () => void;
   public readonly messages : Messages;
   private bookItemOutput: HTMLDivElement;
   public readonly scroller: Scroll;
@@ -53,6 +57,7 @@ export class App {
               scroller: Scroll, bookItemOutput: HTMLDivElement,
               messages : Messages, settingsDialog: SettingsDialog,
               helpDialog: HelpDialog,
+              confirmDialog: ConfirmDialog,
               known: KnownWordDictionary, unknown: UnknownWordDictionary,
               thesaurus: Thesaurus, library: BookLibrary) {
     this.clicked =  { word: "", node: null, start: 0, end: 0 };
@@ -67,6 +72,7 @@ export class App {
     this.tokenFactory = tokenFactory;
     this.settingsDialog = settingsDialog;
     this.helpDialog = helpDialog;
+    this.confirmDialog = confirmDialog;
     this.scroller = scroller;
     this.bookItemOutput = bookItemOutput;
     this.messages = messages;
@@ -75,6 +81,7 @@ export class App {
     this.thesaurus = thesaurus;
     this.library = library;
     this.openBookBlob = new Uint8Array(0);
+    this.openBookSha1 = null;
     this.openBook = { items: [], media: [], fonts: [], title: "", authors: [] };
     this.openBookItemIndex = -1;
     this.openBookItemRendered = -1;
@@ -161,6 +168,7 @@ export class App {
 
     this.openBook.items[this.openBookItemRendered]?.cleanup(this.bookItemOutput.id);
     this.openBookBlob = new Uint8Array(0);
+    this.openBookSha1 = null;
     this.openBook = { items: [], media: [], fonts: [], title: "", authors: [] };
     this.openBookItemIndex = -1;
     this.openBookItemRendered = -1;
@@ -227,15 +235,42 @@ export class App {
     );
   }
 
+  public async removeOpenBookFromLibrary(): Promise<void> {
+    if (this.isBookClosed() || !this.openBookSha1) {
+      this.messages.add(Warning("No book is open"));
+      return;
+    }
+    const sha = this.openBookSha1;
+    const title = this.openBook.title.trim() || "this book";
+    const confirmed = await this.confirmDialog.show(
+      `Remove “${title}” from your library?`,
+    );
+    if (!confirmed) return;
+    try {
+      await this.library.removeBook(sha);
+      this.closeBook();
+      this.messages.add(Info("Book removed from library"));
+      this.onLibraryChanged?.();
+    } catch (error) {
+      console.error("[library] failed to remove book", error);
+      this.messages.add(Error("Failed to remove book from library"));
+    }
+  }
+
   public async loadNewBook(bookBytes: Uint8Array<ArrayBuffer>, token : AsyncToken) {
     this.closeBookIfOpen();
     const book = await parseEpubBook(bookBytes);
     if (!token.isValid()) return;
     this.openBookBlob = bookBytes;
     this.openBook = book;
-    void this.library.addBook(book, bookBytes).catch((error) =>
-      console.error("[library] failed to store opened book", error),
-    );
+    void this.library
+      .addBook(book, bookBytes)
+      .then((record) => {
+        this.openBookSha1 = record.bookContentHash;
+      })
+      .catch((error) =>
+        console.error("[library] failed to store opened book", error),
+      );
     this.openBookItemIndex = 0;
     await this.renderOpenBookItem();
     this.openBookItemRendered = 0;

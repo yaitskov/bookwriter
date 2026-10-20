@@ -4,10 +4,17 @@ import { hideAll } from "../menu/popup.js";
 
 export function handleKeydown(event: KeyboardEvent, app: App): void {
   const isModalOpen = (): boolean =>
-    app.loadingModal.isOpen() || app.settingsDialog.isOpen() || app.helpDialog.isOpen();
+    app.loadingModal.isOpen() ||
+    app.settingsDialog.isOpen() ||
+    app.helpDialog.isOpen() ||
+    app.confirmDialog.isOpen();
 
   if (event.key === "Escape") {
     app.messages.clear();
+    if (app.confirmDialog.isOpen()) {
+      app.confirmDialog.hide();
+      return;
+    }
     if (app.loadingModal.isOpen()) {
       app.loadingModal.cancelLoading();
       return;
@@ -75,6 +82,12 @@ export function handleKeydown(event: KeyboardEvent, app: App): void {
     if (event.repeat) return;
     if (isModalOpen()) return;
     app.settingsDialog.show();
+    return;
+  }
+  if (key === "r") {
+    if (event.repeat) return;
+    if (isModalOpen()) return;
+    void app.removeOpenBookFromLibrary();
     return;
   }
   if (key !== "c") return;

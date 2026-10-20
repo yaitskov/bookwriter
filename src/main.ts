@@ -7,6 +7,7 @@ import { handleKeydown } from "./event/keydown.js";
 import { bindMouseDoc } from "./event/mouse.js";
 import { bindMenus } from "./event/menu.js";
 import { createHelpDialog } from "./help-dialog.js";
+import { createConfirmDialog } from "./confirm-dialog.js";
 import { initDb } from "./db/index.js";
 import { createKnownWordDictionary } from "./known-word-dictionary.js";
 import { resolveLinkTarget } from "./hyperlink.js";
@@ -90,6 +91,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     doc,
   });
   const helpDialog = createHelpDialog({ doc });
+  const confirmDialog = createConfirmDialog({ doc, confirmLabel: "Remove" });
   const app = new App(
     doc,
     window,
@@ -102,6 +104,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     messages,
     settingsDialog,
     helpDialog,
+    confirmDialog,
     known,
     unknown,
     thesaurus,
@@ -112,13 +115,14 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
   const unknownMenu = createUnknownMenu(doc);
   const synonymMenu = createSynonymMenu(doc);
 
-  createBookLibraryView({
+  const libraryView = createBookLibraryView({
     target: getDiv("library"),
     library,
     onOpenBook: (contentSha) => app.openBookFromLibrary(contentSha),
     onOpenNewBook: () => app.loadNewBookDialog(),
     doc,
   });
+  app.onLibraryChanged = () => void libraryView.refresh();
 
   navMenu.previousButton.addEventListener("click", () => app.navigateRelative(-1));
   navMenu.nextButton.addEventListener("click", () => app.navigateRelative(1));

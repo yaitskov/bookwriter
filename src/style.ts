@@ -387,6 +387,53 @@ export function ensureStyles(doc: Document = document): void {
     .book-library-empty:hover {
       background: #f0f0f0;
     }
+    .confirm-dialog-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 10004;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.35);
+      font: 14px system-ui, sans-serif;
+    }
+    .confirm-dialog {
+      min-width: 300px;
+      max-width: 90vw;
+      background: #fff;
+      border: 1px solid #d0d0d0;
+      border-radius: 6px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      padding: 16px 20px;
+      color: #222;
+    }
+    .confirm-dialog .confirm-message {
+      margin: 0 0 16px;
+    }
+    .confirm-dialog .confirm-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .confirm-dialog button {
+      padding: 6px 14px;
+      border: 1px solid #d0d0d0;
+      border-radius: 4px;
+      background: #fff;
+      cursor: pointer;
+      font: inherit;
+    }
+    .confirm-dialog button:hover {
+      background: #f0f0f0;
+    }
+    .confirm-dialog .confirm-primary {
+      background: #c53030;
+      border-color: #a52a2a;
+      color: #fff;
+    }
+    .confirm-dialog .confirm-primary:hover {
+      background: #a52a2a;
+    }
   `;
   doc.head.appendChild(style);
 }

@@ -17,6 +17,7 @@ const GROUPS: ReadonlyArray<ShortcutGroup> = [
     shortcuts: [
       { keys: "o", action: "Open a new book" },
       { keys: "q", action: "Close the book" },
+      { keys: "r", action: "Remove the open book from the library" },
     ],
   },
   {
