@@ -7,8 +7,10 @@ import { handleKeydown } from "./event/keydown.js";
 import { bindMouseDoc } from "./event/mouse.js";
 import { bindMenus } from "./event/menu.js";
 import { createHelpDialog } from "./help-dialog.js";
+import { initDb } from "./db/index.js";
 import { createKnownWordDictionary } from "./known-word-dictionary.js";
 import { resolveLinkTarget } from "./hyperlink.js";
+import { createBookLibrary } from "./library.js";
 import { createLoadingModal } from "./loading-modal.js";
 import { createMessages, Info, Warning } from "./messages.js";
 import { createNavMenu } from "./nav-menu.js";
@@ -25,6 +27,7 @@ import { createUnknownWordDictionary } from "./unknown-word-dictionary.js";
 import { bindPersistence } from "./word-dictionary.js";
 
 const thesaurus = createThesaurus();
+const library = createBookLibrary(initDb("click-library"));
 
 
 const getDiv = (id : string): HTMLElement => {
@@ -101,6 +104,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     known,
     unknown,
     thesaurus,
+    library,
   );
   const loadNewBookBtn = getDiv("load-new-book");
   const showHelpBtn = getDiv("show-help");

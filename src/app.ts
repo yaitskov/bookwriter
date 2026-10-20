@@ -11,6 +11,7 @@ import { type HelpDialog } from "./help-dialog.js";
 import type { KnownWordDictionary } from "./known-word-dictionary.js";
 import type { UnknownWordDictionary } from "./unknown-word-dictionary.js";
 import type { Thesaurus } from "./thesaurus.js";
+import type { BookLibrary } from "./library.js";
 import { wrapWord, applySynonym, restoreAllOccurrences } from "./word-span.js";
 import { extractSentence } from "./sentence.js";
 
@@ -43,6 +44,7 @@ export class App {
   public readonly known: KnownWordDictionary;
   public readonly unknown: UnknownWordDictionary;
   public readonly thesaurus: Thesaurus;
+  public readonly library: BookLibrary;
 
   constructor(doc: Document, win: Window, tokenFactory: AsyncTokenFactory,
               loadingModal: LoadingModal,
@@ -51,7 +53,7 @@ export class App {
               messages : Messages, settingsDialog: SettingsDialog,
               helpDialog: HelpDialog,
               known: KnownWordDictionary, unknown: UnknownWordDictionary,
-              thesaurus: Thesaurus) {
+              thesaurus: Thesaurus, library: BookLibrary) {
     this.clicked =  { word: "", node: null, start: 0, end: 0 };
     this.synonymSpan = null;
     this.clickedLink = null;
@@ -70,6 +72,7 @@ export class App {
     this.known = known;
     this.unknown = unknown;
     this.thesaurus = thesaurus;
+    this.library = library;
     this.openBookBlob = new Uint8Array(0);
     this.openBook = { items: [], media: [], fonts: [], title: "", authors: [] };
     this.openBookItemIndex = -1;
@@ -193,7 +196,7 @@ export class App {
 
   public loadNewBookDialog() {
     loadBookFile({ doc: this.doc })
-      .then(async (bytes : Uint8Array) => {
+      .then(async (bytes : Uint8Array<ArrayBuffer>) => {
         const token = this.tokenFactory.issue();
         this.loadingModal.show();
         try {
@@ -212,12 +215,15 @@ export class App {
       });
   }
 
-  public async loadNewBook(bookBytes: Uint8Array, token : AsyncToken) {
+  public async loadNewBook(bookBytes: Uint8Array<ArrayBuffer>, token : AsyncToken) {
     this.closeBookIfOpen();
     const book = await parseEpubBook(bookBytes);
     if (!token.isValid()) return;
     this.openBookBlob = bookBytes;
     this.openBook = book;
+    void this.library.addBook(book, bookBytes).catch((error) =>
+      console.error("[library] failed to store opened book", error),
+    );
     this.openBookItemIndex = 0;
     await this.renderOpenBookItem();
     this.openBookItemRendered = 0;

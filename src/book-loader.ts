@@ -5,11 +5,11 @@ export interface LoadBookFileOptions {
   accept?: string;
 }
 
-export function loadBookFile(options: LoadBookFileOptions = {}): Promise<Uint8Array> {
+export function loadBookFile(options: LoadBookFileOptions = {}): Promise<Uint8Array<ArrayBuffer>> {
   const doc = options.doc ?? document;
   const accept = options.accept ?? DEFAULT_ACCEPT;
 
-  return new Promise<Uint8Array>((resolve, reject) => {
+  return new Promise<Uint8Array<ArrayBuffer>>((resolve, reject) => {
     const input = doc.createElement("input");
     input.type = "file";
     input.accept = accept;
