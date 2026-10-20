@@ -11,7 +11,7 @@ import { type HelpDialog } from "./help-dialog.js";
 import type { KnownWordDictionary } from "./known-word-dictionary.js";
 import type { UnknownWordDictionary } from "./unknown-word-dictionary.js";
 import type { Thesaurus } from "./thesaurus.js";
-import type { BookLibrary } from "./library.js";
+import type { BookLibrary } from "./library/db.js";
 import { wrapWord, applySynonym, restoreAllOccurrences } from "./word-span.js";
 import { extractSentence } from "./sentence.js";
 

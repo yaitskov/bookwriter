@@ -10,7 +10,7 @@ import { createHelpDialog } from "./help-dialog.js";
 import { initDb } from "./db/index.js";
 import { createKnownWordDictionary } from "./known-word-dictionary.js";
 import { resolveLinkTarget } from "./hyperlink.js";
-import { createBookLibrary } from "./library.js";
+import { createBookLibrary } from "./library/db.js";
 import { createLoadingModal } from "./loading-modal.js";
 import { createMessages, Info, Warning } from "./messages.js";
 import { createNavMenu } from "./nav-menu.js";

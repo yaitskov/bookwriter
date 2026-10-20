@@ -1,5 +1,5 @@
-import type { EpubBook } from "./epub.js";
-import { CONTENT, META, Sha1, type DB } from "./db/index.js";
+import type { EpubBook } from "../epub.js";
+import { CONTENT, META, Sha1, type DB } from "../db/index.js";
 
 export type LibraryBookRecord = {
   readonly bookContentHash: Sha1;
