@@ -71,6 +71,12 @@ export function handleKeydown(event: KeyboardEvent, app: App): void {
     app.helpDialog.show();
     return;
   }
+  if (key === "s") {
+    if (event.repeat) return;
+    if (isModalOpen()) return;
+    app.settingsDialog.show();
+    return;
+  }
   if (key !== "c") return;
   if (isModalOpen()) return;
   const target = app.openBook.navigationTarget;

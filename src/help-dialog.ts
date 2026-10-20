@@ -23,6 +23,7 @@ const GROUPS: ReadonlyArray<ShortcutGroup> = [
     title: "Help",
     shortcuts: [
       { keys: "h / k", action: "Show this help" },
+      { keys: "s", action: "Open settings" },
       { keys: "Esc", action: "Close menus and dialogs" },
     ],
   },
