@@ -11,6 +11,7 @@ import { initDb } from "./db/index.js";
 import { createKnownWordDictionary } from "./known-word-dictionary.js";
 import { resolveLinkTarget } from "./hyperlink.js";
 import { createBookLibrary } from "./library/db.js";
+import { createBookLibraryView } from "./library/view.js";
 import { createLoadingModal } from "./loading-modal.js";
 import { createMessages, Info, Warning } from "./messages.js";
 import { createNavMenu } from "./nav-menu.js";
@@ -110,6 +111,14 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
   const showHelpBtn = getDiv("show-help");
   const unknownMenu = createUnknownMenu(doc);
   const synonymMenu = createSynonymMenu(doc);
+
+  createBookLibraryView({
+    target: getDiv("library"),
+    library,
+    onOpenBook: (contentSha) => app.openBookFromLibrary(contentSha),
+    onOpenNewBook: () => app.loadNewBookDialog(),
+    doc,
+  });
 
   navMenu.previousButton.addEventListener("click", () => app.navigateRelative(-1));
   navMenu.nextButton.addEventListener("click", () => app.navigateRelative(1));

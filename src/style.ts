@@ -322,6 +322,63 @@ export function ensureStyles(doc: Document = document): void {
     .message-text {
       flex: 1 1 auto;
     }
+    .book-library {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 12px 0;
+      font: 14px system-ui, sans-serif;
+    }
+    .book-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      width: 180px;
+      height: 96px;
+      box-sizing: border-box;
+      padding: 10px 12px;
+      border: 1px solid #d0d0d0;
+      border-radius: 6px;
+      background: #fff;
+      color: #222;
+      cursor: pointer;
+      overflow: hidden;
+      text-align: left;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    }
+    .book-card:hover {
+      background: #f0f0f0;
+    }
+    .book-card-title {
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .book-card-author {
+      font-size: 12px;
+      color: #666;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .book-library-empty {
+      width: 180px;
+      height: 96px;
+      box-sizing: border-box;
+      padding: 10px 12px;
+      border: 1px dashed #b0b0b0;
+      border-radius: 6px;
+      background: #fafafa;
+      color: #666;
+      cursor: pointer;
+      font: inherit;
+    }
+    .book-library-empty:hover {
+      background: #f0f0f0;
+    }
   `;
   doc.head.appendChild(style);
 }

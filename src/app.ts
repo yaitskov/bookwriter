@@ -12,6 +12,7 @@ import type { KnownWordDictionary } from "./known-word-dictionary.js";
 import type { UnknownWordDictionary } from "./unknown-word-dictionary.js";
 import type { Thesaurus } from "./thesaurus.js";
 import type { BookLibrary } from "./library/db.js";
+import type { Sha1 } from "./util/hash.js";
 import { wrapWord, applySynonym, restoreAllOccurrences } from "./word-span.js";
 import { extractSentence } from "./sentence.js";
 
@@ -213,6 +214,25 @@ export class App {
       .catch((error) => {
         console.error("failed to open book", error);
       });
+  }
+
+  public openBookFromLibrary(contentSha: Sha1): void {
+    const token = this.tokenFactory.issue();
+    this.loadingModal.show();
+    this.library
+      .getBookContent(contentSha)
+      .then((bytes) => this.loadNewBook(bytes as Uint8Array<ArrayBuffer>, token))
+      .then(() => {
+        this.updateNavMenu();
+        this.c2welcome.style.display = "none";
+        const { title, authors } = this.openBook;
+        const by = authors.length > 0 ? ` by ${authors.join(", ")}` : "";
+        this.messages.add(Info(`Loaded ${title || "book"}${by}`));
+      })
+      .catch((error) => {
+        console.error("[library] failed to open book", error);
+      })
+      .finally(() => token.onValid(() => this.loadingModal.hide()));
   }
 
   public async loadNewBook(bookBytes: Uint8Array<ArrayBuffer>, token : AsyncToken) {
