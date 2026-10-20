@@ -14,6 +14,7 @@ export interface BookLibrary {
     bookBlob: Uint8Array<ArrayBuffer>,
   ): Promise<LibraryBookRecord>;
   loadAllBookShas(): Promise<Sha1[]>;
+  loadBookCards(): Promise<LibraryBookRecord[]>;
   getBookCard(contentSha: Sha1): Promise<LibraryBookRecord>;
   getBookContent(contentSha: Sha1): Promise<Uint8Array>;
   removeBook(contentSha: Sha1): Promise<void>;
@@ -78,6 +79,13 @@ class Library implements BookLibrary {
 
   async loadAllBookShas(): Promise<Sha1[]> {
     return this.db.listSha1s(META);
+  }
+
+  async loadBookCards(): Promise<LibraryBookRecord[]> {
+    const stored = await this.db.listRecords(META);
+    return stored
+      .map(parseStoredBookRecord)
+      .filter((record): record is LibraryBookRecord => record !== null);
   }
 
   async getBookCard(contentSha: Sha1): Promise<LibraryBookRecord> {

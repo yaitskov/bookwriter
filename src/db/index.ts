@@ -11,6 +11,7 @@ export interface DB {
   putRecord(table: string, key: Sha1, record: unknown): Promise<void>;
   getRecord<T>(table: string, key: Sha1): Promise<T | undefined>;
   listSha1s(table: string): Promise<Sha1[]>;
+  listRecords(table: string): Promise<unknown[]>;
   removeRecords(tables: string[], key: Sha1): Promise<void>;
 }
 
@@ -108,6 +109,14 @@ class SqlDb implements DB {
     return keys
       .filter((key): key is string => typeof key === "string")
       .map((key) => Sha1.fromHex(key));
+  }
+
+  async listRecords(table: string): Promise<unknown[]> {
+    const database = await this.database;
+    const transaction = database.transaction([table], "readonly");
+    return requestToPromise<unknown[]>(
+      transaction.objectStore(table).getAll(),
+    );
   }
 
   async removeRecords(tables: string[], key: Sha1): Promise<void> {
