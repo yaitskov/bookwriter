@@ -40,7 +40,6 @@ const getDiv = (id : string): HTMLElement => {
 export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document): void {
   const messages = createMessages(doc);
   const scroller = new Scroll(doc);
-  const navMenu = createNavMenu(doc);
   const c2welcome = getDiv("c2-welcome");
   const loadingModal = createLoadingModal({ doc, onCancel: () => tokenFactory.issue() });
   const tokenFactory = new AsyncTokenFactory();
@@ -96,7 +95,6 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     tokenFactory,
     loadingModal,
     c2welcome,
-    navMenu,
     scroller,
     bookItemOutput,
     messages,
@@ -108,6 +106,13 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     thesaurus,
     library,
   );
+  app.navMenu = createNavMenu(doc, {
+    onPrevious: () => app.navigateRelative(-1),
+    onNext: () => app.navigateRelative(1),
+    onClose: () => app.closeBook(),
+    onContent: () => app.showTableOfContents(),
+  });
+
   const loadNewBookBtn = getDiv("load-new-book");
   const showHelpBtn = getDiv("show-help");
   const unknownMenu = createUnknownMenu(doc);
@@ -122,8 +127,6 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
   });
   app.onLibraryChanged = () => void libraryView.refresh();
 
-  navMenu.previousButton.addEventListener("click", () => app.navigateRelative(-1));
-  navMenu.nextButton.addEventListener("click", () => app.navigateRelative(1));
   loadNewBookBtn.addEventListener("click", () => app.loadNewBookDialog());
   showHelpBtn.addEventListener("click", () => app.helpDialog.show());
 

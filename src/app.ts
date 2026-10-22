@@ -5,7 +5,7 @@ import { Scroll, ToAnchor, ToEnd, ToStart, type ScrollTo } from "./scroll-to.js"
 import { parseEpubBook } from "./epub.js";
 import { type LoadingModal } from "./loading-modal.js";
 import { loadBookFile } from "./book-loader.js";
-import { type NavMenu } from "./nav-menu.js";
+import { type NavMenuController } from "./nav-menu.js";
 import { type SettingsDialog } from "./settings-dialog.js";
 import { type HelpDialog } from "./help-dialog.js";
 import { type ConfirmDialog } from "./confirm-dialog.js";
@@ -39,7 +39,7 @@ export class App {
   private bookItemOutput: HTMLDivElement;
   public readonly scroller: Scroll;
   private c2welcome: HTMLElement;
-  private navMenu: NavMenu;
+  public navMenu: NavMenuController | null;
   public readonly loadingModal: LoadingModal;
   private doc: Document;
   private win: Window;
@@ -53,7 +53,7 @@ export class App {
 
   constructor(doc: Document, win: Window, tokenFactory: AsyncTokenFactory,
               loadingModal: LoadingModal,
-              c2welcome: HTMLElement, navMenu: NavMenu,
+              c2welcome: HTMLElement,
               scroller: Scroll, bookItemOutput: HTMLDivElement,
               messages : Messages, settingsDialog: SettingsDialog,
               helpDialog: HelpDialog,
@@ -63,12 +63,12 @@ export class App {
     this.clicked =  { word: "", node: null, start: 0, end: 0 };
     this.synonymSpan = null;
     this.clickedLink = null;
-
+    this.navMenu = null; // avoid loop;
     this.doc = doc;
     this.win = win;
     this.loadingModal = loadingModal;
     this.c2welcome = c2welcome;
-    this.navMenu = navMenu;
+
     this.tokenFactory = tokenFactory;
     this.settingsDialog = settingsDialog;
     this.helpDialog = helpDialog;
@@ -140,8 +140,7 @@ export class App {
 
   public updateNavMenu(): void {
     const hasBook = this.openBook.items.length > 0 && this.openBookItemIndex >= 0;
-    this.navMenu.previousButton.disabled = !hasBook;
-    this.navMenu.nextButton.disabled = !hasBook;
+    this.navMenu?.setDisabled(!hasBook);
   };
 
   public isBookClosed() {
@@ -158,6 +157,18 @@ export class App {
   public closeBookIfOpen() {
     if (this.isBookClosed()) return;
     this.closeBook();
+  }
+
+  public showTableOfContents() {
+    const target = this.openBook.navigationTarget;
+    if (!target) {
+      this.messages.add(Warning("No table of contents found"));
+      return;
+    }
+    void this.goToBookItem(target.index).catch((error) => {
+      this.messages.add(Warning("Failed to navigate to the table of contents"));
+      console.error("navigation failed", error);
+    });
   }
 
   public closeBook() {

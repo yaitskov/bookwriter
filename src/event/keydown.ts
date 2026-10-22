@@ -61,41 +61,20 @@ export function handleKeydown(event: KeyboardEvent, app: App): void {
   }
   if (event.ctrlKey || event.metaKey || event.altKey) return;
   const key = event.key.toLowerCase();
+  if (event.repeat || isModalOpen()) return;
   if (key === "q") {
-    if (isModalOpen()) return;
     app.closeBook();
-    return;
-  }
-  if (key === "o") {
-    if (event.repeat) return;
-    if (isModalOpen()) return;
+  } else if (key === "o") {
     app.loadNewBookDialog();
-    return;
-  }
-  if (key === "h" || key === "k") {
-    if (event.repeat) return;
-    if (isModalOpen()) return;
+  } else if  (key === "h" || key === "k") {
     app.helpDialog.show();
-    return;
-  }
-  if (key === "s") {
-    if (event.repeat) return;
-    if (isModalOpen()) return;
+  } else if (key === "s") {
     app.settingsDialog.show();
-    return;
-  }
-  if (key === "r") {
-    if (event.repeat) return;
-    if (isModalOpen()) return;
+  } else if (key === "r") {
     void app.removeOpenBookFromLibrary();
-    return;
+  } else if (key === "c") {
+    app.showTableOfContents();
+  } else {
+    console.error(`no handle for key: ${key}`);
   }
-  if (key !== "c") return;
-  if (isModalOpen()) return;
-  const target = app.openBook.navigationTarget;
-  if (!target) return;
-  const scroll = target.anchor ? ToAnchor(target.anchor) : ToStart();
-  void app.goToBookItem(target.index, scroll).catch((error) =>
-    console.error("navigation failed", error),
-  );
 }

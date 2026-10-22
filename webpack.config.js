@@ -11,15 +11,15 @@ module.exports = (_env, argv) => ({
   },
   devtool: argv.mode === "production" ? "source-map" : "eval-source-map",
   resolve: {
-    extensions: [".ts", ".js"],
+    extensions: [".tsx", ".ts", ".js"],
     extensionAlias: {
-      ".js": [".ts", ".js"],
+      ".js": [".tsx", ".ts", ".js"],
     },
   },
   module: {
     rules: [
       {
-        test: /\.ts$/,
+        test: /\.(ts|tsx)$/,
         loader: "esbuild-loader",
         options: {
           target: "es2020",
