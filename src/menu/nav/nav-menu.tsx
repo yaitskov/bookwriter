@@ -1,6 +1,13 @@
 import "./nav.css";
 import { createRoot } from "react-dom/client";
 
+function dropFocus(cb: () => void): () => void {
+  return () => {
+    if (document.activeElement)
+      (document.activeElement as HTMLElement).blur();
+    cb();
+  }
+};
 
 export interface NavMenuProps {
   disabled: boolean;
@@ -27,9 +34,9 @@ function ContentButton({ onClick }: ContentButtonProps): React.JSX.Element {
       type="button"
       className="content"
       title="Book Content (c)"
-      onClick={onClick}
-    >
-      ☰
+      onClick={dropFocus(onClick)}
+          >
+          ☰
     </button>
   );
 }
@@ -50,39 +57,39 @@ export function NavMenu({
         type="button"
         tabIndex={-1}
         title="Scroll to the chapter start (Home)"
-        onClick={onToChapterStart}
-      >⇑</button>
+        onClick={dropFocus(onToChapterStart)}
+          >⇑</button>
       <ContentButton onClick={onContent}/>
       <button
         type="button" tabIndex={-1}
         className="stretch"
         title="Previous chapter (Arrow Left)"
-        onClick={onPrevious}
-      >
-        {"<"}
+        onClick={dropFocus(onPrevious)}
+          >
+          {"<"}
       </button>
       <button
         type="button" tabIndex={-1}
         className="close"
         title="Close Book (q)"
-        onClick={onClose}
-      >
-        🗙
+        onClick={dropFocus(onClose)}
+          >
+          🗙
       </button>
       <button
         type="button" tabIndex={-1}
         className="stretch"
         title="Next chapter (Arrow Right)"
-        onClick={onNext}
-      >
-        {">"}
+        onClick={dropFocus(onNext)}
+          >
+          {">"}
       </button>
       <ContentButton onClick={onContent}/>
       <button
         type="button" tabIndex={-1}
         title="Scroll to the chapter end (End)"
-        onClick={onToChapterEnd}
-      >⇓</button>
+        onClick={dropFocus(onToChapterEnd)}
+          >⇓</button>
     </div>
   );
 }
