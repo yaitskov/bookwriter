@@ -13,17 +13,15 @@ export interface NavMenuController {
 }
 
 export interface ContentButtonProps {
-  disabled: boolean;
   onClick: () => void;
 }
 
-function ContentButton({ disabled, onClick }: ContentButtonProps): React.JSX.Element {
+function ContentButton({ onClick }: ContentButtonProps): React.JSX.Element {
   return (
     <button
       type="button"
       className="content"
       title="Book Content"
-      disabled={disabled}
       onClick={onClick}
     >
       ☰
@@ -38,15 +36,15 @@ export function NavMenu({
   onContent,
   onClose,
 }: NavMenuProps): React.JSX.Element {
+  if (disabled) return <span></span> ;
   return (
     <div className="book-nav">
-      <ContentButton onClick={onContent} disabled={disabled}/>
+      <ContentButton onClick={onContent}/>
       <button
         type="button"
         className="stretch"
         title="Previous chapter"
         aria-label="Previous section"
-        disabled={disabled}
         onClick={onPrevious}
       >
         {"<"}
@@ -55,7 +53,6 @@ export function NavMenu({
         type="button"
         className="close"
         title="Close Book"
-        disabled={disabled}
         onClick={onClose}
       >
         🗙
@@ -65,12 +62,11 @@ export function NavMenu({
         className="stretch"
         title="Next chapter"
         aria-label="Next section"
-        disabled={disabled}
         onClick={onNext}
       >
         {">"}
       </button>
-      <ContentButton onClick={onContent} disabled={disabled}/>
+      <ContentButton onClick={onContent}/>
     </div>
   );
 }
