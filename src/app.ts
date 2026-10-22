@@ -5,7 +5,7 @@ import { Scroll, ToAnchor, ToEnd, ToStart, type ScrollTo } from "./scroll-to.js"
 import { parseEpubBook } from "./epub.js";
 import { type LoadingModal } from "./loading-modal.js";
 import { loadBookFile } from "./book-loader.js";
-import { type NavMenuController } from "./nav-menu.js";
+import { type NavMenuController } from "./menu/nav/nav-menu";
 import { type SettingsDialog } from "./settings-dialog.js";
 import { type HelpDialog } from "./help-dialog.js";
 import { type ConfirmDialog } from "./confirm-dialog.js";

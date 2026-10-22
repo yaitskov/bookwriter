@@ -2,6 +2,9 @@ const path = require("path");
 
 module.exports = (_env, argv) => ({
   mode: argv.mode ?? "production",
+  experiments: {
+    css: true,
+  },
   target: ["web", "es2020"],
   entry: "./src/index.ts",
   output: {

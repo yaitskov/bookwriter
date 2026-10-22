@@ -15,7 +15,7 @@ import { createBookLibrary } from "./library/db.js";
 import { createBookLibraryView } from "./library/view.js";
 import { createLoadingModal } from "./loading-modal.js";
 import { createMessages, Info, Warning } from "./messages.js";
-import { createNavMenu } from "./nav-menu.js";
+import { createNavMenu } from "./menu/nav/nav-menu";
 import { popups, hideAll } from "./menu/popup.js";
 import { createSynonymMenu } from "./menu/synonym-menu.js";
 import { createUnknownMenu } from "./menu/unknown-menu.js";

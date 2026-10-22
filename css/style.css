@@ -241,58 +241,6 @@ body {
   background: #f0f0f0;
 }
 
-@property --book-nav-btn-width {
-  syntax: "<length>";
-  inherits: false;
-  initial-value: 40px;
-}
-
-.book-nav:hover {
-  right: 0px;
-  opacity: 1;
-  padding: 0px;
-}
-.book-nav {
-  position: fixed;
-  top: 0px;
-  bottom: 0px;
-  right: calc(var(--book-nav-btn-width) * -0.75);
-  padding: 0px;
-  padding-left: 20px;
-  transition: 0s;
-  opacity: 0.4;
-  justify-content: center;
-
-  z-index: 9000;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font: 14px system-ui, sans-serif;
-  .content {
-    padding: 4px 0px;
-  }
-  .close {
-    padding-bottom: 4px;
-  }
-  .stretch {
-    flex-grow: 1;
-  }
-  button {
-    width: var(--book-nav-btn-width);
-    border: 1px solid #d0d0d0;
-    border-radius: 4px;
-    background: #fff;
-    color: #222;
-    cursor: pointer;
-    font: inherit;
-    font-size: 18px;
-    line-height: 1;
-  }
-  button:active {
-    background-color: pink;
-    border-color: pink;
-  }
-}
 .messages {
   position: fixed;
   right: 12px;

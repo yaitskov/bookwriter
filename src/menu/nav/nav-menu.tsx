@@ -1,4 +1,6 @@
+import "./nav.css";
 import { createRoot } from "react-dom/client";
+
 
 export interface NavMenuProps {
   disabled: boolean;
