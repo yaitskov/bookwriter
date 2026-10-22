@@ -395,6 +395,9 @@ body {
 .book-library-empty:hover {
   background: #f0f0f0;
 }
+.c2 {
+  font-style: italic;
+}
 #c2-welcome {
   font-family: Arial;
   button.cta {
