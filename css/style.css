@@ -1,5 +1,8 @@
 body {
     margin: 0px;
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
 }
 
 .word-menu {
@@ -390,6 +393,7 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   padding: 10px 7px;
+  flex-grow: 1;
 
   p:first-child {
       margin-top: 0px;
