@@ -186,10 +186,10 @@ export class App {
     this.openBookItemRendered = -1;
     this.setTabTitle(null);
     this.bookItemOutput.replaceChildren();
+    this.bookItemOutput.classList.add('hidden');
     this.messages.add(Info("Book closed"));
-
     this.updateNavMenu();
-    this.c2welcome.style.display = "";
+    this.c2welcome.classList.remove('hidden');
   }
 
   public scrollTo(scroll: ScrollTo): void {
@@ -228,9 +228,10 @@ export class App {
   private async openBookFromBytes(bookBytes: Uint8Array<ArrayBuffer>, token: AsyncToken): Promise<void> {
     await this.loadNewBook(bookBytes, token);
     this.updateNavMenu();
-    this.c2welcome.style.display = "none";
     const { title, authors } = this.openBook;
     this.setTabTitle(title);
+    this.bookItemOutput.classList.remove('hidden');
+    this.c2welcome.classList.add('hidden');
     const by = authors.length > 0 ? ` by ${authors.join(", ")}` : "";
     this.messages.add(Info(`Loaded ${title || "book"}${by}`));
   }
@@ -291,6 +292,8 @@ export class App {
       .then((record) => {
         this.openBookSha1 = record.bookContentHash;
         this.setTabTitle(this.openBook.title);
+        this.bookItemOutput.classList.remove('hidden');
+        this.c2welcome.classList.add('hidden');
         this.onLibraryChanged?.();
       })
       .catch((error) =>
