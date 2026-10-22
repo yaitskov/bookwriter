@@ -105,16 +105,15 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     unknown,
     thesaurus,
     library,
+    createNavMenu(doc, {
+      onPrevious: () => app.navigateRelative(-1),
+      onNext: () => app.navigateRelative(1),
+      onClose: () => app.closeBook(),
+      onContent: () => app.showTableOfContents(),
+      onToChapterStart: () => app.scrollTo(ToStart()),
+      onToChapterEnd: () => app.scrollTo(ToEnd()),
+    })
   );
-  app.navMenu = createNavMenu(doc, {
-    onPrevious: () => app.navigateRelative(-1),
-    onNext: () => app.navigateRelative(1),
-    onClose: () => app.closeBook(),
-    onContent: () => app.showTableOfContents(),
-    onToChapterStart: () => app.scrollTo(ToStart()),
-    onToChapterEnd: () => app.scrollTo(ToEnd()),
-  });
-
   const loadNewBookBtn = getDiv("load-new-book");
   const showHelpBtn = getDiv("show-help");
   const unknownMenu = createUnknownMenu(doc);

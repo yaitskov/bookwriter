@@ -39,7 +39,7 @@ export class App {
   private bookItemOutput: HTMLDivElement;
   public readonly scroller: Scroll;
   private c2welcome: HTMLElement;
-  public navMenu: NavMenuController | null;
+  private navMenu: NavMenuController;
   public readonly loadingModal: LoadingModal;
   private doc: Document;
   private win: Window;
@@ -59,11 +59,12 @@ export class App {
               helpDialog: HelpDialog,
               confirmDialog: ConfirmDialog,
               known: KnownWordDictionary, unknown: UnknownWordDictionary,
-              thesaurus: Thesaurus, library: BookLibrary) {
+              thesaurus: Thesaurus, library: BookLibrary,
+              navMenu: NavMenuController) {
     this.clicked =  { word: "", node: null, start: 0, end: 0 };
     this.synonymSpan = null;
     this.clickedLink = null;
-    this.navMenu = null; // avoid loop;
+    this.navMenu = navMenu;
     this.doc = doc;
     this.win = win;
     this.loadingModal = loadingModal;
@@ -140,7 +141,7 @@ export class App {
 
   public updateNavMenu(): void {
     const hasBook = this.openBook.items.length > 0 && this.openBookItemIndex >= 0;
-    this.navMenu?.setDisabled(!hasBook);
+    this.navMenu.setDisabled(!hasBook);
   };
 
   public isBookClosed() {
