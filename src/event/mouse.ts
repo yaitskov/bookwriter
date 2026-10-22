@@ -43,6 +43,22 @@ export function bindMouseDoc(doc: Document, win: Window, app: App, messages: Mes
   doc.addEventListener("wheel", onWheel, { passive: true });
   win.addEventListener("scroll", () => messages.clear(), { passive: true });
 
+  doc.addEventListener("dblclick", (event: Event) => {
+    const target = event.target;
+    hideAll();
+    if (!(target instanceof Element)) { return; }
+    if (!target.closest("#book-content")) { return; }
+
+    const anchor = target.closest("a[href]");
+    const rawHref = anchor?.getAttribute("href") ?? null;
+    app.clickedLink = rawHref ? { href: rawHref, fromIndex: app.openBookItemRendered } : null;
+
+    if (app.clickedLink) {
+      event.preventDefault();
+      app.followLink();
+    }
+
+  });
   doc.addEventListener("click", (event: Event) => {
     const mouseEvent = event as MouseEvent;
     if (mouseEvent.button !== 0) return;
