@@ -191,6 +191,12 @@ export class App {
     this.c2welcome.style.display = "";
   }
 
+  public scrollTo(scroll: ScrollTo): void {
+    if (this.openBookItemRendered > 0) {
+      this.scroller.apply(scroll);
+    }
+  }
+
   public async goToBookItem(index: number, scroll: ScrollTo = ToStart()): Promise<void> {
     if (index < 0 || index >= this.openBook.items.length) return;
     if (index === this.openBookItemRendered) {

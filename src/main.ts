@@ -21,7 +21,7 @@ import { createSynonymMenu } from "./menu/synonym-menu.js";
 import { createUnknownMenu } from "./menu/unknown-menu.js";
 import { createUserSettings } from "./settings.js";
 import { createSettingsDialog } from "./settings-dialog.js";
-import { Scroll, ToAnchor, ToStart, type ScrollTo } from "./scroll-to.js";
+import { Scroll, ToAnchor, ToEnd, ToStart, type ScrollTo } from "./scroll-to.js";
 import { BLOCK_SELECTOR } from "./sentence.js";
 import { createThesaurus } from "./thesaurus.js";
 import { createUnknownWordDictionary } from "./unknown-word-dictionary.js";
@@ -111,6 +111,8 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     onNext: () => app.navigateRelative(1),
     onClose: () => app.closeBook(),
     onContent: () => app.showTableOfContents(),
+    onToChapterStart: () => app.scrollTo(ToStart()),
+    onToChapterEnd: () => app.scrollTo(ToEnd()),
   });
 
   const loadNewBookBtn = getDiv("load-new-book");

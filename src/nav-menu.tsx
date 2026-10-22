@@ -6,6 +6,8 @@ export interface NavMenuProps {
   onNext: () => void;
   onContent: () => void;
   onClose: () => void;
+  onToChapterStart: () => void;
+  onToChapterEnd: () => void;
 }
 
 export interface NavMenuController {
@@ -35,10 +37,17 @@ export function NavMenu({
   onNext,
   onContent,
   onClose,
+  onToChapterStart,
+  onToChapterEnd,
 }: NavMenuProps): React.JSX.Element {
   if (disabled) return <span></span> ;
   return (
     <div className="book-nav">
+      <button
+        type="button"
+        title="Scroll to chapter start"
+        onClick={onToChapterStart}
+      >⇑</button>
       <ContentButton onClick={onContent}/>
       <button
         type="button"
@@ -67,6 +76,11 @@ export function NavMenu({
         {">"}
       </button>
       <ContentButton onClick={onContent}/>
+      <button
+        type="button"
+        title="Scroll to chapter end"
+        onClick={onToChapterEnd}
+      >⇓</button>
     </div>
   );
 }
