@@ -1,3 +1,4 @@
+import "./library.css";
 import type { Sha1 } from "../util/hash";
 import type { BookLibrary, LibraryBookRecord } from "./db";
 

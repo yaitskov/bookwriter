@@ -1,0 +1,73 @@
+.book-library {
+  padding: 12px 0;
+  font: 14px system-ui, sans-serif;
+}
+.book-library-title {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+}
+.book-library-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.book-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+
+  @media (width <= 350px) {
+      width: 99%;
+  }
+  @media (width > 350px) {
+      width: 49%;
+  }
+  @media (width > 850px) {
+      width: 32%;
+  }
+  min-width: 100px;
+  height: 96px;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  background: #fff;
+  color: #222;
+  cursor: pointer;
+  overflow: hidden;
+  text-align: left;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+.book-card:hover {
+  background: #f0f0f0;
+}
+.book-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  overflow: hidden;
+}
+.book-card-author {
+  font-size: 12px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.book-library-empty {
+  min-width: 100px;
+  height: 96px;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px dashed #b0b0b0;
+  border-radius: 6px;
+  background: #fafafa;
+  color: #666;
+  cursor: pointer;
+  font: inherit;
+}
+.book-library-empty:hover {
+  background: #f0f0f0;
+}

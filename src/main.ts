@@ -1,3 +1,4 @@
+import "../css/style.css";
 import { App } from "./app";
 import { AsyncTokenFactory, type AsyncToken } from "./async-token";
 import { createBulkSynonym, restoreIneligibleSynonyms } from "./bulk-synonym";
