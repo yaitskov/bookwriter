@@ -1,3 +1,7 @@
+body {
+    margin: 0px;
+}
+
 .word-menu {
   position: fixed;
   z-index: 10000;
@@ -381,10 +385,15 @@
   background: #f0f0f0;
 }
 #c2-welcome {
-  background-image: url("/img/old-paper/old-paper.jpg");
+  background-image: url("/img/leather/white.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  padding: 10px 7px;
+
+  p:first-child {
+      margin-top: 0px;
+  }
 }
 .confirm-dialog-backdrop {
   position: fixed;
