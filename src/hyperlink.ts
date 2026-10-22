@@ -1,4 +1,4 @@
-import { resolveHref, type EpubBook } from "./epub.js";
+import { resolveHref, type EpubBook } from "./epub";
 
 export type LinkTarget =
   | { kind: "external"; url: string }

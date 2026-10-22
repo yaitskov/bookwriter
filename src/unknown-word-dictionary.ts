@@ -1,4 +1,4 @@
-import { createWordDictionary, type WordDictionary } from "./word-dictionary.js";
+import { createWordDictionary, type WordDictionary } from "./word-dictionary";
 
 const STORAGE_KEY = "unknown-word-dictionary";
 

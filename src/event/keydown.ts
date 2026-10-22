@@ -1,6 +1,6 @@
-import type { App } from "../app.js";
-import { ToAnchor, ToStart } from "../scroll-to.js";
-import { hideAll } from "../menu/popup.js";
+import type { App } from "../app";
+import { ToAnchor, ToStart } from "../scroll-to";
+import { hideAll } from "../menu/popup";
 
 export function handleKeydown(event: KeyboardEvent, app: App): void {
   const isModalOpen = (): boolean =>

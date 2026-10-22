@@ -1,11 +1,11 @@
-import { extractClickedWord, type ClickedWord } from "../clicked-word.js";
-import { App } from "../app.js";
-import { type Messages } from "../messages.js";
-import { popups, hideAll } from "../menu/popup.js";
-import { type SettingsDialog } from "../settings-dialog.js";
-import { type SynonymMenu } from "../menu/synonym-menu.js";
-import { type UnknownMenu } from "../menu/unknown-menu.js";
-import { BLOCK_SELECTOR } from "../sentence.js";
+import { extractClickedWord, type ClickedWord } from "../clicked-word";
+import { App } from "../app";
+import { type Messages } from "../messages";
+import { popups, hideAll } from "../menu/popup";
+import { type SettingsDialog } from "../settings-dialog";
+import { type SynonymMenu } from "../menu/synonym-menu";
+import { type UnknownMenu } from "../menu/unknown-menu";
+import { BLOCK_SELECTOR } from "../sentence";
 
 
 const onDocClick = (event: MouseEvent): void => {

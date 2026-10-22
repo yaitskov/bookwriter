@@ -1,5 +1,5 @@
-import type { Sha1 } from "../util/hash.js";
-import type { BookLibrary, LibraryBookRecord } from "./db.js";
+import type { Sha1 } from "../util/hash";
+import type { BookLibrary, LibraryBookRecord } from "./db";
 
 export interface BookLibraryViewOptions {
   target: HTMLElement;

@@ -1,6 +1,6 @@
-import type { UnknownMenu } from "../menu/unknown-menu.js";
-import type { SynonymMenu } from "../menu/synonym-menu.js";
-import type { App } from "../app.js";
+import type { UnknownMenu } from "../menu/unknown-menu";
+import type { SynonymMenu } from "../menu/synonym-menu";
+import type { App } from "../app";
 
 export function bindMenus(
   unknownMenu: UnknownMenu,

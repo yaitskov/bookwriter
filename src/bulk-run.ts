@@ -1,6 +1,6 @@
-import { extractBookContent } from "./BookExtraction.js";
-import { filterOutKnownWords, type BulkSynonym, type WordDictionaries } from "./bulk-synonym.js";
-import type { UserSettings } from "./settings.js";
+import { extractBookContent } from "./BookExtraction";
+import { filterOutKnownWords, type BulkSynonym, type WordDictionaries } from "./bulk-synonym";
+import type { UserSettings } from "./settings";
 
 export interface BulkRunOptions extends WordDictionaries {
   bulk: BulkSynonym;

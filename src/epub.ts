@@ -1,7 +1,7 @@
 import { parse, stringify } from "@node-projects/css-parser";
-import { deepMap } from "./TreeObject.js";
-import { replaceUrls } from "./css.js";
-import { TEXT_DECODER, readZip, readZipEntry, type ZipEntry } from "./zip.js";
+import { deepMap } from "./TreeObject";
+import { replaceUrls } from "./css";
+import { TEXT_DECODER, readZip, readZipEntry, type ZipEntry } from "./zip";
 
 const CONTAINER_PATH = "META-INF/container.xml";
 const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif"];

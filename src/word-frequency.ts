@@ -1,4 +1,4 @@
-import { WFT } from "./word-frequency-table.js";
+import { WFT } from "./word-frequency-table";
 
 export const UNKNOWN_WORD_FREQUENCY = 1;
 

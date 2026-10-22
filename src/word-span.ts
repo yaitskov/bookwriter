@@ -1,4 +1,4 @@
-import type { ClickedWord } from "./clicked-word.js";
+import type { ClickedWord } from "./clicked-word";
 
 function capitalizeFirst(text: string): string {
   if (!text) return text;

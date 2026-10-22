@@ -1,11 +1,11 @@
-import type { ClickedWord } from "./clicked-word.js";
-import type { KnownWordDictionary } from "./known-word-dictionary.js";
-import type { UnknownWordDictionary } from "./unknown-word-dictionary.js";
-import type { UserSettings } from "./settings.js";
-import { extractSentence } from "./sentence.js";
-import { createThesaurus, type Thesaurus } from "./thesaurus.js";
-import { wordFrequency } from "./word-frequency.js";
-import { applySynonym, restoreWord, wrapWord } from "./word-span.js";
+import type { ClickedWord } from "./clicked-word";
+import type { KnownWordDictionary } from "./known-word-dictionary";
+import type { UnknownWordDictionary } from "./unknown-word-dictionary";
+import type { UserSettings } from "./settings";
+import { extractSentence } from "./sentence";
+import { createThesaurus, type Thesaurus } from "./thesaurus";
+import { wordFrequency } from "./word-frequency";
+import { applySynonym, restoreWord, wrapWord } from "./word-span";
 
 const SKIP_SELECTOR = ".unknown-word, .synonym, .word-menu, .settings-dialog-backdrop";
 

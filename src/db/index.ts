@@ -1,4 +1,4 @@
-import { Sha1 } from "../util/hash.js";
+import { Sha1 } from "../util/hash";
 
 export { Sha1 };
 

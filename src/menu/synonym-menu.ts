@@ -1,4 +1,4 @@
-import { createPopup, type Popup } from "./popup.js";
+import { createPopup, type Popup } from "./popup";
 
 export interface SynonymMenu {
   popup: Popup;

@@ -1,26 +1,26 @@
-import type { EpubBook } from "./epub.js";
-import { AsyncTokenFactory, type AsyncToken } from "./async-token.js";
-import { Messages, Info, Warning, Error } from "./messages.js";
-import { Scroll, ToAnchor, ToEnd, ToStart, type ScrollTo } from "./scroll-to.js";
-import { parseEpubBook } from "./epub.js";
-import { type LoadingModal } from "./loading-modal.js";
-import { loadBookFile } from "./book-loader.js";
+import type { EpubBook } from "./epub";
+import { AsyncTokenFactory, type AsyncToken } from "./async-token";
+import { Messages, Info, Warning, Error } from "./messages";
+import { Scroll, ToAnchor, ToEnd, ToStart, type ScrollTo } from "./scroll-to";
+import { parseEpubBook } from "./epub";
+import { type LoadingModal } from "./loading-modal";
+import { loadBookFile } from "./book-loader";
 import { type NavMenuController } from "./menu/nav/nav-menu";
-import { type SettingsDialog } from "./settings-dialog.js";
-import { type HelpDialog } from "./help-dialog.js";
-import { type ConfirmDialog } from "./confirm-dialog.js";
-import type { KnownWordDictionary } from "./known-word-dictionary.js";
-import type { UnknownWordDictionary } from "./unknown-word-dictionary.js";
-import type { Thesaurus } from "./thesaurus.js";
-import type { BookLibrary } from "./library/db.js";
-import type { Sha1 } from "./util/hash.js";
-import { wrapWord, applySynonym, restoreAllOccurrences } from "./word-span.js";
-import { extractSentence } from "./sentence.js";
+import { type SettingsDialog } from "./settings-dialog";
+import { type HelpDialog } from "./help-dialog";
+import { type ConfirmDialog } from "./confirm-dialog";
+import type { KnownWordDictionary } from "./known-word-dictionary";
+import type { UnknownWordDictionary } from "./unknown-word-dictionary";
+import type { Thesaurus } from "./thesaurus";
+import type { BookLibrary } from "./library/db";
+import type { Sha1 } from "./util/hash";
+import { wrapWord, applySynonym, restoreAllOccurrences } from "./word-span";
+import { extractSentence } from "./sentence";
 
 const CAMBRIDGE_BASE = "https://dictionary.cambridge.org/dictionary/english/";
-import { popups, hideAll } from "./menu/popup.js";
-import { extractClickedWord, type ClickedWord } from "./clicked-word.js";
-import { resolveLinkTarget } from "./hyperlink.js";
+import { popups, hideAll } from "./menu/popup";
+import { extractClickedWord, type ClickedWord } from "./clicked-word";
+import { resolveLinkTarget } from "./hyperlink";
 
 export type ClickedLink = { href: string; fromIndex: number }
 

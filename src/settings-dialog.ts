@@ -1,4 +1,4 @@
-import type { UserSettings } from "./settings.js";
+import type { UserSettings } from "./settings";
 
 const MIN_EXPONENT = -9;
 const MAX_EXPONENT = 0;

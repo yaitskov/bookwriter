@@ -1,4 +1,4 @@
-import { initApp } from "./main.js";
+import { initApp } from "./main";
 
 const bookContent = document.getElementById("book-content");
 if (!(bookContent instanceof HTMLDivElement)) {
