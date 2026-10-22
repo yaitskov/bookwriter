@@ -6,7 +6,7 @@ body {
 }
 
 #book-content {
-  padding: 0px 20px 0px 10px;
+  padding: 0px 20px 50px 10px;
   @media (aspect-ratio >= 17/9) or (aspect-ratio <= 9/17) {
     padding: 5px;
   }
