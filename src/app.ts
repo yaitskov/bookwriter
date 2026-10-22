@@ -184,7 +184,7 @@ export class App {
     this.openBook = { items: [], media: [], fonts: [], title: "", authors: [] };
     this.openBookItemIndex = -1;
     this.openBookItemRendered = -1;
-
+    this.setTabTitle(null);
     this.bookItemOutput.replaceChildren();
     this.messages.add(Info("Book closed"));
 
@@ -221,11 +221,16 @@ export class App {
     );
   }
 
+  private setTabTitle(t: string | null) {
+    this.doc.title = t || 'E-reader (C2)';
+  }
+
   private async openBookFromBytes(bookBytes: Uint8Array<ArrayBuffer>, token: AsyncToken): Promise<void> {
     await this.loadNewBook(bookBytes, token);
     this.updateNavMenu();
     this.c2welcome.style.display = "none";
     const { title, authors } = this.openBook;
+    this.setTabTitle(title);
     const by = authors.length > 0 ? ` by ${authors.join(", ")}` : "";
     this.messages.add(Info(`Loaded ${title || "book"}${by}`));
   }
@@ -285,6 +290,7 @@ export class App {
       .addBook(book, bookBytes)
       .then((record) => {
         this.openBookSha1 = record.bookContentHash;
+        this.setTabTitle(this.openBook.title);
         this.onLibraryChanged?.();
       })
       .catch((error) =>
