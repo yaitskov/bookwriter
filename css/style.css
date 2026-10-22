@@ -396,6 +396,22 @@ body {
   background: #f0f0f0;
 }
 #c2-welcome {
+  font-family: Arial;
+  button.cta {
+    color: whitesmoke;
+    background-color: black;
+    border-radius: 11px;
+    font-weight: bold;
+  }
+  button.cta:hover {
+    color: black;
+    background-color: whitesmoke;
+    border-color: whitesmoke;
+  }
+  button.cta:active {
+    background-color: red;
+  }
+
   background-image: url("/img/leather/white.jpg");
   background-size: cover;
   background-position: center;
