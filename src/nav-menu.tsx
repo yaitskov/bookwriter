@@ -23,7 +23,7 @@ function ContentButton({ onClick }: ContentButtonProps): React.JSX.Element {
     <button
       type="button"
       className="content"
-      title="Book Content"
+      title="Book Content (c)"
       onClick={onClick}
     >
       ☰
@@ -45,15 +45,14 @@ export function NavMenu({
     <div className="book-nav">
       <button
         type="button"
-        title="Scroll to chapter start"
+        title="Scroll to the chapter start (Home)"
         onClick={onToChapterStart}
       >⇑</button>
       <ContentButton onClick={onContent}/>
       <button
         type="button"
         className="stretch"
-        title="Previous chapter"
-        aria-label="Previous section"
+        title="Previous chapter (Arrow Left)"
         onClick={onPrevious}
       >
         {"<"}
@@ -61,7 +60,7 @@ export function NavMenu({
       <button
         type="button"
         className="close"
-        title="Close Book"
+        title="Close Book (q)"
         onClick={onClose}
       >
         🗙
@@ -69,8 +68,7 @@ export function NavMenu({
       <button
         type="button"
         className="stretch"
-        title="Next chapter"
-        aria-label="Next section"
+        title="Next chapter (Arrow Right)"
         onClick={onNext}
       >
         {">"}
@@ -78,7 +76,7 @@ export function NavMenu({
       <ContentButton onClick={onContent}/>
       <button
         type="button"
-        title="Scroll to chapter end"
+        title="Scroll to the chapter end (End)"
         onClick={onToChapterEnd}
       >⇓</button>
     </div>
