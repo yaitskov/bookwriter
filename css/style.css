@@ -288,12 +288,9 @@ body {
     font-size: 18px;
     line-height: 1;
   }
-  button:hover:enabled {
-    background: #f0f0f0;
-  }
-  button:disabled {
-    opacity: 0.5;
-    cursor: default;
+  button:active {
+    background-color: pink;
+    border-color: pink;
   }
 }
 .messages {
