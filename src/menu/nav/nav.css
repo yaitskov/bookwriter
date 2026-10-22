@@ -37,6 +37,7 @@
   button {
     width: var(--book-nav-btn-width);
     border: 1px solid #d0d0d0;
+    padding: 2px 0px;
     border-radius: 4px;
     background: #fff;
     color: #222;
@@ -44,6 +45,9 @@
     font: inherit;
     font-size: 18px;
     line-height: 1;
+  }
+  button:focus-visible {
+    outline: none;
   }
   button:active {
     background-color: pink;

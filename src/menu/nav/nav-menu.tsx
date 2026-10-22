@@ -23,6 +23,7 @@ export interface ContentButtonProps {
 function ContentButton({ onClick }: ContentButtonProps): React.JSX.Element {
   return (
     <button
+      tabIndex={-1}
       type="button"
       className="content"
       title="Book Content (c)"
@@ -47,12 +48,13 @@ export function NavMenu({
     <div className="book-nav">
       <button
         type="button"
+        tabIndex={-1}
         title="Scroll to the chapter start (Home)"
         onClick={onToChapterStart}
       >⇑</button>
       <ContentButton onClick={onContent}/>
       <button
-        type="button"
+        type="button" tabIndex={-1}
         className="stretch"
         title="Previous chapter (Arrow Left)"
         onClick={onPrevious}
@@ -60,7 +62,7 @@ export function NavMenu({
         {"<"}
       </button>
       <button
-        type="button"
+        type="button" tabIndex={-1}
         className="close"
         title="Close Book (q)"
         onClick={onClose}
@@ -68,7 +70,7 @@ export function NavMenu({
         🗙
       </button>
       <button
-        type="button"
+        type="button" tabIndex={-1}
         className="stretch"
         title="Next chapter (Arrow Right)"
         onClick={onNext}
@@ -77,7 +79,7 @@ export function NavMenu({
       </button>
       <ContentButton onClick={onContent}/>
       <button
-        type="button"
+        type="button" tabIndex={-1}
         title="Scroll to the chapter end (End)"
         onClick={onToChapterEnd}
       >⇓</button>
