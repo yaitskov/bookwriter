@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "typecheck": "tsc --noEmit",
+    "w": "npm run typecheck && webpack --mode development --watch",
     "build": "npm run typecheck && webpack --mode production",
     "dev": "npm run typecheck && webpack --mode development && serve ."
   },
