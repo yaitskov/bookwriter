@@ -23,7 +23,6 @@ import { createUserSettings } from "./settings.js";
 import { createSettingsDialog } from "./settings-dialog.js";
 import { Scroll, ToAnchor, ToStart, type ScrollTo } from "./scroll-to.js";
 import { BLOCK_SELECTOR } from "./sentence.js";
-import { ensureStyles } from "./style.js";
 import { createThesaurus } from "./thesaurus.js";
 import { createUnknownWordDictionary } from "./unknown-word-dictionary.js";
 import { bindPersistence } from "./word-dictionary.js";
@@ -39,7 +38,6 @@ const getDiv = (id : string): HTMLElement => {
 
 }
 export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document): void {
-  ensureStyles(doc);
   const messages = createMessages(doc);
   const scroller = new Scroll(doc);
   const navMenu = createNavMenu(doc);
