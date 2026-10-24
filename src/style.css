@@ -1,8 +1,62 @@
+@property --color {
+  syntax: "<color>";
+  initial-value: black;
+  inherits: true;
+}
+
+@property --color2 {
+  syntax: "<color>";
+  initial-value: #666;
+  inherits: true;
+}
+
+@property --background-color {
+  syntax: "<color>";
+  initial-value: whitesmoke;
+  inherits: true;
+}
+
+@property --img-color-scheme {
+  syntax: "<string>";
+  initial-value: "light";
+  inherits: true;
+}
+
+@property --border-color {
+  syntax: "<color>";
+  initial-value: black;
+  inherits: true;
+}
+
+@property --btn-back-color {
+  syntax: "<color>";
+  initial-value: #707070;
+  inherits: true;
+}
+
+@property --hover-color {
+  syntax: "<color>";
+  initial-value: #f0f0f0;
+  inherits: true;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color: #979797;
+    --background-color: black;
+    --img-color-scheme: "dark";
+    --border-color: #707070;
+    --btn-back-color: #707070;
+    --hover-color: #999;
+  }
+}
+
 body {
     margin: 0px;
     display: flex;
     min-height: 100vh;
     flex-direction: column;
+    color: var(--color);
 }
 
 .hidden {
@@ -305,21 +359,24 @@ body {
 #c2-welcome {
   font-family: Arial;
   button.cta {
-    color: whitesmoke;
-    background-color: black;
+    color: var(--background-color);
+    background-color: var(--color);
     border-radius: 11px;
     font-weight: bold;
   }
   button.cta:hover {
-    color: black;
-    background-color: whitesmoke;
-    border-color: whitesmoke;
+    color: var(--color);
+    background-color: var(--background-color);
   }
   button.cta:active {
-    background-color: red;
+    background-color: pink;
   }
-
-  background-image: url("/img/leather/white.jpg");
+  @media (prefers-color-scheme: light) {
+    background-image: url("/img/leather/white.jpg");
+  }
+  @media (prefers-color-scheme: dark) {
+    background-image: url("/img/leather/black.jpg");
+  }
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
