@@ -110,6 +110,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
       onPrevious: () => app.navigateRelative(-1),
       onNext: () => app.navigateRelative(1),
       onClose: () => app.closeBook(),
+      onSettings: () => app.settingsDialog.show(),
       onContent: () => app.showTableOfContents(),
       onToChapterStart: () => app.scrollTo(ToStart()),
       onToChapterEnd: () => app.scrollTo(ToEnd()),

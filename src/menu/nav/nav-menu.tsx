@@ -15,6 +15,7 @@ export interface NavMenuProps {
   onNext: () => void;
   onContent: () => void;
   onClose: () => void;
+  onSettings: () => void;
   onToChapterStart: () => void;
   onToChapterEnd: () => void;
 }
@@ -47,6 +48,7 @@ export function NavMenu({
   onNext,
   onContent,
   onClose,
+  onSettings,
   onToChapterStart,
   onToChapterEnd,
 }: NavMenuProps): React.JSX.Element {
@@ -75,6 +77,14 @@ export function NavMenu({
         onClick={dropFocus(onClose)}
           >
           🗙
+      </button>
+      <button
+        type="button" tabIndex={-1}
+        className="settings"
+        title="Settings (s)"
+        onClick={dropFocus(onSettings)}
+          >
+          ⚙
       </button>
       <button
         type="button" tabIndex={-1}
