@@ -12,7 +12,7 @@
 
 @property --background-color {
   syntax: "<color>";
-  initial-value: whitesmoke;
+  initial-value: #fefefe;
   inherits: true;
 }
 
@@ -30,7 +30,13 @@
 
 @property --btn-back-color {
   syntax: "<color>";
-  initial-value: #707070;
+  initial-value: #a9a9a9;
+  inherits: true;
+}
+
+@property --btn-back-color2 {
+  syntax: "<color>";
+  initial-value: #d0d0d0;
   inherits: true;
 }
 
@@ -161,7 +167,8 @@
     --background-color: black;
     --img-color-scheme: "dark";
     --border-color: #707070;
-    --btn-back-color: #707070;
+    --btn-back-color2: #222;
+    --btn-back-color: #444;
     --hover-color: #1d1d1d;
     --surface-color: #1a1a1a;
     --surface-variant: #151515;
@@ -192,6 +199,22 @@ body {
     flex-direction: column;
     color: var(--color);
     background-color: var(--background-color);
+}
+
+button {
+  color: var(--color);
+  background-color: var(--btn-back-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+
+button:hover {
+  background-color: var(--hover-color);
+}
+
+button:active {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
 }
 
 .hidden {
