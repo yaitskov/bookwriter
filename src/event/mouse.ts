@@ -1,20 +1,11 @@
 import { extractClickedWord, type ClickedWord } from "../clicked-word";
 import { App } from "../app";
 import { type Messages } from "../messages";
-import { popups, hideAll, isAnyPopupOpen } from "../menu/popup";
+import { hideAll, isAnyPopupOpen } from "../menu/popup";
 import { type SettingsDialog } from "../settings-dialog";
 import { type SynonymMenu } from "../menu/synonym-menu";
 import { type UnknownMenu } from "../menu/unknown-menu";
 import { BLOCK_SELECTOR } from "../sentence";
-
-
-const onDocClick = (event: MouseEvent): void => {
-  const target = event.target as Node;
-  for (const popup of popups) {
-    if (popup.isOpen() && !popup.contains(target)) popup.hide();
-  }
-};
-
 
 export function bindMouseDoc(doc: Document, win: Window, app: App, messages: Messages,
                              unknownMenu: UnknownMenu, synonymMenu: SynonymMenu): void
@@ -44,7 +35,6 @@ export function bindMouseDoc(doc: Document, win: Window, app: App, messages: Mes
     }, 300);
   };
 
-  doc.addEventListener("click", onDocClick);
   doc.addEventListener("wheel", onWheel, { passive: false });
   win.addEventListener("scroll", () => messages.clear(), { passive: true });
 
@@ -68,7 +58,9 @@ export function bindMouseDoc(doc: Document, win: Window, app: App, messages: Mes
     const mouseEvent = event as MouseEvent;
     if (mouseEvent.button !== 0) return;
     const target = event.target;
+    const wasPopupOpen = isAnyPopupOpen();
     hideAll();
+    if (wasPopupOpen) return;
     if (!(target instanceof Element)) { return; }
     if (!target.closest("#book-content")) { return; }
 

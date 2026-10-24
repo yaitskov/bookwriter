@@ -20,6 +20,7 @@
 
 ## Don't read
 - word-frequency-table.ts
+- dist
 
 ## TS Modules
 - word-frequency-table.ts exports a single dictionary mapping a
