@@ -42,23 +42,48 @@ export function bindMouseDoc(doc: Document, win: Window, app: App, messages: Mes
     synonymMenu.followLinkItem.style.display = display;
   };
 
-  let advancing = false;
+  const GESTURE_END_MS = 300;
+  let gestureActive = false;
+  let gestureStartedAtEdge = false;
+  let navigatedThisGesture = false;
+  let gestureEndTimer: number | null = null;
+
+  const endGesture = (): void => {
+    gestureActive = false;
+    gestureStartedAtEdge = false;
+    navigatedThisGesture = false;
+    gestureEndTimer = null;
+  };
+
+  const keepGestureAlive = (): void => {
+    if (gestureEndTimer !== null) win.clearTimeout(gestureEndTimer);
+    gestureEndTimer = win.setTimeout(endGesture, GESTURE_END_MS);
+  };
+
+  const beginGesture = (next: boolean): void => {
+    gestureActive = true;
+    gestureStartedAtEdge = next
+      ? app.scroller.isWindowAtBottom()
+      : app.scroller.isWindowAtTop();
+    navigatedThisGesture = false;
+  };
+
   const onWheel = (event: WheelEvent): void => {
     if (isAnyPopupOpen()) {
       if (!(event.ctrlKey || event.metaKey)) event.preventDefault();
       return;
     }
     if (event.ctrlKey || event.metaKey || event.altKey) return;
-    if (advancing || event.deltaY === 0) return;
+    if (event.deltaY === 0) return;
     if (app.loadingModal.isOpen() || app.settingsDialog.isOpen() || app.helpDialog.isOpen() || app.confirmDialog.isOpen())
       return;
     const next = event.deltaY > 0;
+    if (!gestureActive) beginGesture(next);
+    keepGestureAlive();
+    if (!gestureStartedAtEdge || navigatedThisGesture) return;
     if (next ? !app.scroller.isWindowAtBottom() : !app.scroller.isWindowAtTop()) return;
-    advancing = true;
+    navigatedThisGesture = true;
     app.navigateRelative(next ? 1 : -1);
-    win.setTimeout(() => {
-      advancing = false;
-    }, 300);
   };
 
   doc.addEventListener("wheel", onWheel, { passive: false });
