@@ -249,7 +249,7 @@ body.dialog-open {
   position: fixed;
   z-index: 10000;
   display: none;
-  background: var(--surface-color);
+  background: var(--btn-back-color);
   border: 1px solid var(--border-color-light);
   border-radius: 4px;
   box-shadow: 0 2px 10px var(--shadow-color);
