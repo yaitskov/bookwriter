@@ -1,7 +1,7 @@
 import { extractClickedWord, type ClickedWord } from "../clicked-word";
 import { App } from "../app";
 import { type Messages } from "../messages";
-import { popups, hideAll } from "../menu/popup";
+import { popups, hideAll, isAnyPopupOpen } from "../menu/popup";
 import { type SettingsDialog } from "../settings-dialog";
 import { type SynonymMenu } from "../menu/synonym-menu";
 import { type UnknownMenu } from "../menu/unknown-menu";
@@ -27,6 +27,10 @@ export function bindMouseDoc(doc: Document, win: Window, app: App, messages: Mes
 
   let advancing = false;
   const onWheel = (event: WheelEvent): void => {
+    if (isAnyPopupOpen()) {
+      if (!(event.ctrlKey || event.metaKey)) event.preventDefault();
+      return;
+    }
     if (event.ctrlKey || event.metaKey || event.altKey) return;
     if (advancing || event.deltaY === 0) return;
     if (app.loadingModal.isOpen() || app.settingsDialog.isOpen() || app.helpDialog.isOpen() || app.confirmDialog.isOpen())
@@ -41,7 +45,7 @@ export function bindMouseDoc(doc: Document, win: Window, app: App, messages: Mes
   };
 
   doc.addEventListener("click", onDocClick);
-  doc.addEventListener("wheel", onWheel, { passive: true });
+  doc.addEventListener("wheel", onWheel, { passive: false });
   win.addEventListener("scroll", () => messages.clear(), { passive: true });
 
   doc.addEventListener("dblclick", (event: Event) => {

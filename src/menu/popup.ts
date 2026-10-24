@@ -10,6 +10,13 @@ export interface Popup {
 
 export const popups: Popup[] = [];
 
+export function isAnyPopupOpen(): boolean {
+  for (const popup of popups) {
+    if (popup.isOpen()) return true;
+  }
+  return false;
+}
+
 export function hideAll(): void {
   for (const popup of popups) popup.hide();
 }
