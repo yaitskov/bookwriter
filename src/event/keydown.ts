@@ -1,6 +1,6 @@
 import type { App } from "../app";
 import { ToAnchor, ToStart } from "../scroll-to";
-import { hideAll, isAnyPopupOpen } from "../menu/popup";
+import { hideAll, isAnyPopupOpen, getOpenPopup } from "../menu/popup";
 
 export function handleKeydown(event: KeyboardEvent, app: App): void {
   const isModalOpen = (): boolean =>
@@ -30,6 +30,24 @@ export function handleKeydown(event: KeyboardEvent, app: App): void {
     }
     hideAll();
     return;
+  }
+  const popup = getOpenPopup();
+  if (popup) {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      popup.focusNext();
+      return;
+    }
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      popup.focusPrevious();
+      return;
+    }
+    if (event.key === "Enter") {
+      event.preventDefault();
+      if (!event.repeat) popup.clickFocused();
+      return;
+    }
   }
   if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
     if (isModalOpen()) return;

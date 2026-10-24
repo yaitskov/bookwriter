@@ -269,6 +269,10 @@ body.dialog-open {
 .word-menu button:hover {
   background: var(--hover-color);
 }
+.word-menu button:focus {
+  background: var(--hover-color);
+  outline: none;
+}
 .word-menu .menu-label {
   padding: 6px 16px;
   color: var(--color2);
