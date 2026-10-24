@@ -68,6 +68,27 @@ export function createSettingsDialog(options: SettingsDialogOptions): SettingsDi
   slider.max = String(STEPS);
   slider.step = "1";
 
+  const scale = doc.createElement("div");
+  scale.className = "settings-scale";
+
+  const rare = doc.createElement("span");
+  rare.className = "settings-scale-rare";
+  const unknown = doc.createElement("span");
+  unknown.textContent = "???";
+  const word = doc.createElement("span");
+  word.textContent = "aadvark";
+  rare.append(unknown, word);
+
+  const middle = doc.createElement("span");
+  middle.className = "settings-scale-middle";
+  middle.textContent = "cat";
+
+  const common = doc.createElement("span");
+  common.className = "settings-scale-common";
+  common.textContent = "the";
+
+  scale.append(rare, middle, common);
+
   const readout = doc.createElement("div");
   readout.className = "settings-value";
 
@@ -89,7 +110,7 @@ export function createSettingsDialog(options: SettingsDialogOptions): SettingsDi
   cancelButton.textContent = "Cancel";
 
   actions.append(applyButton, cancelButton);
-  form.append(heading, label, slider, readout, hint, actions);
+  form.append(heading, label, slider, scale, readout, hint, actions);
   panel.append(form);
   backdrop.append(panel);
   doc.body.append(backdrop);
