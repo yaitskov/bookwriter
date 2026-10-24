@@ -40,14 +40,148 @@
   inherits: true;
 }
 
+@property --surface-color {
+  syntax: "<color>";
+  initial-value: #fff;
+  inherits: true;
+}
+
+@property --surface-variant {
+  syntax: "<color>";
+  initial-value: #fafafa;
+  inherits: true;
+}
+
+@property --border-color-light {
+  syntax: "<color>";
+  initial-value: #d0d0d0;
+  inherits: true;
+}
+
+@property --border-color-medium {
+  syntax: "<color>";
+  initial-value: #b0b0b0;
+  inherits: true;
+}
+
+@property --border-color-strong {
+  syntax: "<color>";
+  initial-value: #c0c0c0;
+  inherits: true;
+}
+
+@property --text-color-strong {
+  syntax: "<color>";
+  initial-value: #222;
+  inherits: true;
+}
+
+@property --text-color-subtle {
+  syntax: "<color>";
+  initial-value: #444;
+  inherits: true;
+}
+
+@property --primary-color {
+  syntax: "<color>";
+  initial-value: #2b6cb0;
+  inherits: true;
+}
+
+@property --primary-color-hover {
+  syntax: "<color>";
+  initial-value: #2a5f96;
+  inherits: true;
+}
+
+@property --danger-color {
+  syntax: "<color>";
+  initial-value: #c53030;
+  inherits: true;
+}
+
+@property --danger-color-hover {
+  syntax: "<color>";
+  initial-value: #a52a2a;
+  inherits: true;
+}
+
+@property --warning-color {
+  syntax: "<color>";
+  initial-value: #e6b800;
+  inherits: true;
+}
+
+@property --warning-bg {
+  syntax: "<color>";
+  initial-value: #fff3b0;
+  inherits: true;
+}
+
+@property --neutral-bg {
+  syntax: "<color>";
+  initial-value: #e8e8e8;
+  inherits: true;
+}
+
+@property --info-border {
+  syntax: "<color>";
+  initial-value: #d0e0f0;
+  inherits: true;
+}
+
+@property --shadow-color {
+  syntax: "<color>";
+  initial-value: rgba(0, 0, 0, 0.2);
+  inherits: true;
+}
+
+@property --shadow-color-strong {
+  syntax: "<color>";
+  initial-value: rgba(0, 0, 0, 0.3);
+  inherits: true;
+}
+
+@property --backdrop-color {
+  syntax: "<color>";
+  initial-value: rgba(0, 0, 0, 0.35);
+  inherits: true;
+}
+
+@property --accent-color {
+  syntax: "<color>";
+  initial-value: pink;
+  inherits: true;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --color: #979797;
+    --color2: #797979;
     --background-color: black;
     --img-color-scheme: "dark";
     --border-color: #707070;
     --btn-back-color: #707070;
-    --hover-color: #999;
+    --hover-color: #1d1d1d;
+    --surface-color: #1a1a1a;
+    --surface-variant: #151515;
+    --border-color-light: #333;
+    --border-color-medium: #444;
+    --border-color-strong: #555;
+    --text-color-strong: #e0e0e0;
+    --text-color-subtle: #b0b0b0;
+    --primary-color: #4a90e2;
+    --primary-color-hover: #357abd;
+    --danger-color: #e53e3e;
+    --danger-color-hover: #c53030;
+    --warning-color: #d69e2e;
+    --warning-bg: #744210;
+    --neutral-bg: #2d2d2d;
+    --info-border: #2c5282;
+    --shadow-color: rgba(0, 0, 0, 0.4);
+    --shadow-color-strong: rgba(0, 0, 0, 0.6);
+    --backdrop-color: rgba(0, 0, 0, 0.6);
+    --accent-color: #ff69b4;
   }
 }
 
@@ -74,10 +208,10 @@ body {
   position: fixed;
   z-index: 10000;
   display: none;
-  background: #fff;
-  border: 1px solid #d0d0d0;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color-light);
   border-radius: 4px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 10px var(--shadow-color);
   padding: 4px 0;
   font: 14px system-ui, sans-serif;
 }
@@ -92,16 +226,16 @@ body {
   font: inherit;
 }
 .word-menu button:hover {
-  background: #f0f0f0;
+  background: var(--hover-color);
 }
 .word-menu .menu-label {
   padding: 6px 16px;
-  color: #666;
+  color: var(--color2);
   cursor: default;
   user-select: none;
 }
 .unknown-word {
-  background: #fff3b0;
+  background: var(--warning-bg);
   border-radius: 2px;
   padding: 0 1px;
   animation: unknown-word-pulse 2s ease-in-out infinite;
@@ -112,8 +246,8 @@ body {
   100% { opacity: 1; }
 }
 .synonym {
-  background: #e8e8e8;
-  border: 1px solid #c0c0c0;
+  background: var(--neutral-bg);
+  border: 1px solid var(--border-color-strong);
   border-radius: 4px;
   padding: 0 2px;
 }
@@ -122,7 +256,7 @@ body {
   inset: 0;
   z-index: 10001;
   display: none;
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--backdrop-color);
   font: 14px system-ui, sans-serif;
 }
 .settings-dialog {
@@ -133,12 +267,12 @@ body {
   z-index: 10002;
   min-width: 340px;
   max-width: 90vw;
-  background: #fff;
-  border: 1px solid #d0d0d0;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color-light);
   border-radius: 6px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 20px var(--shadow-color-strong);
   padding: 16px 20px;
-  color: #222;
+  color: var(--text-color-strong);
 }
 .settings-dialog h2 {
   margin: 0 0 12px;
@@ -154,13 +288,13 @@ body {
 }
 .settings-dialog .settings-value {
   margin-top: 8px;
-  color: #666;
+  color: var(--color2);
   font: 12px ui-monospace, monospace;
   user-select: none;
 }
 .settings-dialog .settings-hint {
   margin: 8px 0 0;
-  color: #666;
+  color: var(--color2);
   font-size: 12px;
 }
 .settings-dialog .settings-actions {
@@ -171,26 +305,27 @@ body {
 }
 .settings-dialog button {
   padding: 6px 14px;
-  border: 1px solid #d0d0d0;
+  border: 1px solid var(--border-color-light);
   border-radius: 4px;
-  background: #fff;
+  background: var(--surface-color);
   cursor: pointer;
   font: inherit;
+  color: var(--text-color-strong);
 }
 .settings-dialog button:hover:enabled {
-  background: #f0f0f0;
+  background: var(--hover-color);
 }
 .settings-dialog button:disabled {
   opacity: 0.5;
   cursor: default;
 }
 .settings-dialog .settings-apply {
-  background: #2b6cb0;
-  border-color: #2a5f96;
+  background: var(--primary-color);
+  border-color: var(--primary-color-hover);
   color: #fff;
 }
 .settings-dialog .settings-apply:hover:enabled {
-  background: #2a5f96;
+  background: var(--primary-color-hover);
 }
 .help-dialog-backdrop {
   position: fixed;
@@ -199,7 +334,7 @@ body {
   display: none;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--backdrop-color);
   font: 14px system-ui, sans-serif;
 }
 .help-dialog {
@@ -207,12 +342,12 @@ body {
   max-width: 90vw;
   max-height: 85vh;
   overflow: auto;
-  background: #fff;
-  border: 1px solid #d0d0d0;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color-light);
   border-radius: 6px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 20px var(--shadow-color-strong);
   padding: 16px 20px;
-  color: #222;
+  color: var(--text-color-strong);
 }
 .help-dialog h2 {
   margin: 0 0 12px;
@@ -223,7 +358,7 @@ body {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #666;
+  color: var(--color2);
 }
 .help-dialog .shortcut-list {
   display: grid;
@@ -235,11 +370,11 @@ body {
   margin: 0;
   white-space: nowrap;
   font: 12px ui-monospace, monospace;
-  color: #2b6cb0;
+  color: var(--primary-color);
 }
 .help-dialog .shortcut-action {
   margin: 0;
-  color: #444;
+  color: var(--text-color-subtle);
 }
 .help-dialog .help-actions {
   display: flex;
@@ -248,14 +383,15 @@ body {
 }
 .help-dialog button {
   padding: 6px 14px;
-  border: 1px solid #d0d0d0;
+  border: 1px solid var(--border-color-light);
   border-radius: 4px;
-  background: #fff;
+  background: var(--surface-color);
+  color: var(--text-color-strong);
   cursor: pointer;
   font: inherit;
 }
 .help-dialog button:hover {
-  background: #f0f0f0;
+  background: var(--hover-color);
 }
 .loading-modal-backdrop {
   position: fixed;
@@ -264,7 +400,7 @@ body {
   display: none;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--backdrop-color);
   font: 14px system-ui, sans-serif;
 }
 .loading-modal {
@@ -274,17 +410,17 @@ body {
   gap: 12px;
   min-width: 220px;
   padding: 20px 24px;
-  background: #fff;
-  border: 1px solid #d0d0d0;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color-light);
   border-radius: 6px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  color: #222;
+  box-shadow: 0 4px 20px var(--shadow-color-strong);
+  color: var(--text-color-strong);
 }
 .loading-spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid #d0e0f0;
-  border-top-color: #2b6cb0;
+  border: 3px solid var(--info-border);
+  border-top-color: var(--primary-color);
   border-radius: 50%;
   animation: loading-spin 0.8s linear infinite;
 }
@@ -296,14 +432,15 @@ body {
 }
 .loading-cancel {
   padding: 6px 14px;
-  border: 1px solid #d0d0d0;
+  border: 1px solid var(--border-color-light);
   border-radius: 4px;
-  background: #fff;
+  background: var(--surface-color);
+  color: var(--text-color-strong);
   cursor: pointer;
   font: inherit;
 }
 .loading-cancel:hover {
-  background: #f0f0f0;
+  background: var(--hover-color);
 }
 
 .messages {
@@ -324,20 +461,20 @@ body {
   gap: 8px;
   padding: 8px 12px;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 10px var(--shadow-color);
   opacity: 0.9;
   pointer-events: auto;
 }
 .message-info {
-  background: #2b6cb0;
+  background: var(--primary-color);
   color: #fff;
 }
 .message-warning {
-  background: #e6b800;
+  background: var(--warning-color);
   color: #222;
 }
 .message-error {
-  background: #c53030;
+  background: var(--danger-color);
   color: #fff;
 }
 .message-close {
@@ -369,7 +506,7 @@ body {
     background-color: var(--background-color);
   }
   button.cta:active {
-    background-color: pink;
+    background-color: var(--accent-color);
   }
   @media (prefers-color-scheme: light) {
     background-image: url("/img/leather/white.jpg");
@@ -428,18 +565,18 @@ body {
   display: none;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--backdrop-color);
   font: 14px system-ui, sans-serif;
 }
 .confirm-dialog {
   min-width: 300px;
   max-width: 90vw;
-  background: #fff;
-  border: 1px solid #d0d0d0;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color-light);
   border-radius: 6px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 20px var(--shadow-color-strong);
   padding: 16px 20px;
-  color: #222;
+  color: var(--text-color-strong);
 }
 .confirm-dialog .confirm-message {
   margin: 0 0 16px;
@@ -451,20 +588,21 @@ body {
 }
 .confirm-dialog button {
   padding: 6px 14px;
-  border: 1px solid #d0d0d0;
+  border: 1px solid var(--border-color-light);
   border-radius: 4px;
-  background: #fff;
+  background: var(--surface-color);
+  color: var(--text-color-strong);
   cursor: pointer;
   font: inherit;
 }
 .confirm-dialog button:hover {
-  background: #f0f0f0;
+  background: var(--hover-color);
 }
 .confirm-dialog .confirm-primary {
-  background: #c53030;
-  border-color: #a52a2a;
+  background: var(--danger-color);
+  border-color: var(--danger-color-hover);
   color: #fff;
 }
 .confirm-dialog .confirm-primary:hover {
-  background: #a52a2a;
+  background: var(--danger-color-hover);
 }

@@ -40,11 +40,11 @@
   }
   button {
     width: var(--book-nav-btn-width);
-    border: 1px solid #d0d0d0;
+    border: 1px solid var(--border-color-light);
     padding: 2px 0px;
     border-radius: 4px;
-    background: #fff;
-    color: #222;
+    background: var(--surface-color);
+    color: var(--text-color-strong);
     cursor: pointer;
     font: inherit;
     font-size: 18px;
@@ -54,7 +54,7 @@
     outline: none;
   }
   button:active {
-    background-color: pink;
-    border-color: pink;
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
   }
 }
