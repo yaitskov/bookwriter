@@ -1,3 +1,5 @@
+import { lockScroll, unlockScroll } from "./scroll-lock";
+
 export interface ConfirmDialogOptions {
   doc?: Document;
   confirmLabel?: string;
@@ -53,6 +55,7 @@ export function createConfirmDialog(
     resolve = null;
     backdrop.style.display = "none";
     open = false;
+    unlockScroll(doc);
     done(confirmed);
   };
 
@@ -63,6 +66,7 @@ export function createConfirmDialog(
     message.textContent = text;
     backdrop.style.display = "flex";
     open = true;
+    lockScroll(doc);
     return new Promise<boolean>((res) => {
       resolve = res;
     });

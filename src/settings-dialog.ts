@@ -1,4 +1,5 @@
 import type { UserSettings } from "./settings";
+import { lockScroll, unlockScroll } from "./scroll-lock";
 
 const MIN_EXPONENT = -9;
 const MAX_EXPONENT = 0;
@@ -109,14 +110,18 @@ export function createSettingsDialog(options: SettingsDialogOptions): SettingsDi
   };
 
   const show = (): void => {
+    if (open) return;
     refresh();
     backdrop.style.display = "block";
     open = true;
+    lockScroll(doc);
   };
 
   const hide = (): void => {
+    if (!open) return;
     backdrop.style.display = "none";
     open = false;
+    unlockScroll(doc);
   };
 
   slider.addEventListener("input", () => {

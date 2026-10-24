@@ -1,3 +1,5 @@
+import { lockScroll, unlockScroll } from "./scroll-lock";
+
 export interface LoadingModalOptions {
   doc?: Document;
   message?: string;
@@ -40,13 +42,17 @@ export function createLoadingModal(options: LoadingModalOptions = {}): LoadingMo
   let open = false;
 
   const show = (): void => {
+    if (open) return;
     backdrop.style.display = "flex";
     open = true;
+    lockScroll(doc);
   };
 
   const hide = (): void => {
+    if (!open) return;
     backdrop.style.display = "none";
     open = false;
+    unlockScroll(doc);
     options.onCancel?.();
   };
 
