@@ -4,6 +4,12 @@
   inherits: true;
 }
 
+@property --link-color {
+  syntax: "<color>";
+  initial-value: #00e;
+  inherits: true;
+}
+
 @property --color2 {
   syntax: "<color>";
   initial-value: #666;
@@ -163,6 +169,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --color: #979797;
+    --link-color: #4a90e2;
     --color2: #797979;
     --background-color: black;
     --img-color-scheme: "dark";
@@ -225,6 +232,12 @@ button:active {
   padding: 0px 20px 50px 10px;
   @media (aspect-ratio >= 17/9) or (aspect-ratio <= 9/17) {
     padding: 5px;
+  }
+  color: var(--color);
+  background-color: var(--background-color);
+
+  a {
+    color: var(--link-color);
   }
 }
 

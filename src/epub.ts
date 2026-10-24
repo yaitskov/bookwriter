@@ -305,7 +305,7 @@ function createEpubItem(
           }
           return null;
         }), ast);
-        deepMap(() => "var(--background-color)", ast, "background-color");
+        // deepMap(() => "var(--background-color)", ast, "background-color");
         style.textContent = stringify(ast);
       } catch (error) {
         console.warn(`[epub] failed to parse/rewrite CSS "${path}": ${String(error)}`);
