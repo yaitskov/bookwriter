@@ -118,6 +118,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
   );
   const loadNewBookBtn = getDiv("load-new-book");
   const showHelpBtn = getDiv("show-help");
+  const showSettingsBtn = getDiv("show-settings");
   const unknownMenu = createUnknownMenu(doc);
   const synonymMenu = createSynonymMenu(doc);
 
@@ -132,6 +133,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
 
   loadNewBookBtn.addEventListener("click", () => app.loadNewBookDialog());
   showHelpBtn.addEventListener("click", () => app.helpDialog.show());
+  showSettingsBtn.addEventListener("click", () => app.settingsDialog.show());
 
   bindMenus(unknownMenu, synonymMenu, app);
 
