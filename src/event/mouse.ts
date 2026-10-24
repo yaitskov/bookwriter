@@ -7,9 +7,35 @@ import { type SynonymMenu } from "../menu/synonym-menu";
 import { type UnknownMenu } from "../menu/unknown-menu";
 import { BLOCK_SELECTOR } from "../sentence";
 
+interface SelectionSnapshot {
+  readonly collapsed: boolean;
+  readonly text: string;
+}
+
+const captureSelection = (doc: Document): SelectionSnapshot => {
+  const selection = doc.getSelection();
+  return {
+    collapsed: selection?.isCollapsed ?? true,
+    text: selection?.toString() ?? "",
+  };
+};
+
+const selectionChangedSince = (doc: Document, before: SelectionSnapshot): boolean => {
+  const current = captureSelection(doc);
+  return !current.collapsed &&
+    current.text.length > 0 &&
+    (before.collapsed || current.text !== before.text);
+};
+
 export function bindMouseDoc(doc: Document, win: Window, app: App, messages: Messages,
                              unknownMenu: UnknownMenu, synonymMenu: SynonymMenu): void
 {
+  let selectionAtMouseDown: SelectionSnapshot | null = null;
+  doc.addEventListener("mousedown", (event) => {
+    if (event.button !== 0) return;
+    selectionAtMouseDown = captureSelection(doc);
+  });
+
   const setFollowLinkVisible = (visible: boolean): void => {
     const display = visible ? "" : "none";
     unknownMenu.followLinkItem.style.display = display;
@@ -59,6 +85,9 @@ export function bindMouseDoc(doc: Document, win: Window, app: App, messages: Mes
     if (mouseEvent.button !== 0) return;
     const target = event.target;
     const wasPopupOpen = isAnyPopupOpen();
+    const selectedSinceMouseDown = selectionAtMouseDown !== null &&
+      selectionChangedSince(doc, selectionAtMouseDown);
+    selectionAtMouseDown = null;
     hideAll();
     if (wasPopupOpen) return;
     if (!(target instanceof Element)) { return; }
@@ -73,6 +102,8 @@ export function bindMouseDoc(doc: Document, win: Window, app: App, messages: Mes
       app.followLink();
       return;
     }
+
+    if (selectedSinceMouseDown) return;
 
     setFollowLinkVisible(app.clickedLink !== null);
 
