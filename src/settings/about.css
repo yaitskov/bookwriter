@@ -1,0 +1,16 @@
+.about {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 16px;
+  margin: 0;
+}
+.about dt {
+  color: var(--color2);
+}
+.about dd {
+  margin: 0;
+  color: var(--text-color-subtle);
+}
+.about a {
+  color: var(--primary-color);
+}
