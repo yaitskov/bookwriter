@@ -1,34 +1,12 @@
 import type { App } from "../app";
-import { ToAnchor, ToStart } from "../scroll-to";
 import { hideAll, isAnyPopupOpen, getOpenPopup } from "../menu/popup";
 
+
 export function handleKeydown(event: KeyboardEvent, app: App): void {
-  const isModalOpen = (): boolean =>
-    app.loadingModal.isOpen() ||
-    app.settingsDialog.isOpen() ||
-    app.helpDialog.isOpen() ||
-    app.confirmDialog.isOpen() ||
-    isAnyPopupOpen();
+  const isModalOpen = (): boolean => isAnyPopupOpen();
 
   if (event.key === "Escape") {
     app.messages.clear();
-    if (app.confirmDialog.isOpen()) {
-      app.confirmDialog.hide();
-      return;
-    }
-    if (app.loadingModal.isOpen()) {
-      app.loadingModal.cancelLoading();
-      return;
-    }
-    if (app.settingsDialog.isOpen()) {
-      app.settingsDialog.hide();
-      return;
-    }
-    if (app.helpDialog.isOpen()) {
-      app.helpDialog.hide();
-      return;
-    }
-    hideAll();
     return;
   }
   const popup = getOpenPopup();

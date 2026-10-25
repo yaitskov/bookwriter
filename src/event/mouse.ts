@@ -70,13 +70,12 @@ export function bindMouseDoc(doc: Document, win: Window, app: App, messages: Mes
 
   const onWheel = (event: WheelEvent): void => {
     if (isAnyPopupOpen()) {
-      if (!(event.ctrlKey || event.metaKey)) event.preventDefault();
+      event.preventDefault();
       return;
     }
     if (event.ctrlKey || event.metaKey || event.altKey) return;
     if (event.deltaY === 0) return;
-    if (app.loadingModal.isOpen() || app.settingsDialog.isOpen() || app.helpDialog.isOpen() || app.confirmDialog.isOpen())
-      return;
+
     const next = event.deltaY > 0;
     if (!gestureActive) beginGesture(next);
     keepGestureAlive();

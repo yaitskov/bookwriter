@@ -46,7 +46,7 @@ export interface HelpDialog {
   element: HTMLDialogElement;
   show(): void;
   hide(): void;
-  isOpen(): boolean;
+
 }
 
 export function createHelpDialog(options: HelpDialogOptions = {}): HelpDialog {
@@ -125,6 +125,6 @@ export function createHelpDialog(options: HelpDialogOptions = {}): HelpDialog {
     element: dialog,
     show,
     hide,
-    isOpen: () => open,
+
   };
 }

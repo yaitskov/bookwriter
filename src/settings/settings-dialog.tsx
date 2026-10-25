@@ -19,7 +19,6 @@ export interface SettingsDialog {
   element: HTMLDivElement;
   show(): void;
   hide(): void;
-  isOpen(): boolean;
   refresh(): void;
 }
 
@@ -167,7 +166,6 @@ export function createSettingsDialog(options: SettingsDialogOptions): SettingsDi
           if (!open) return;
           open = false;
           render();
-          unlockScroll(doc);
         }}
       />,
     );
@@ -199,7 +197,6 @@ export function createSettingsDialog(options: SettingsDialogOptions): SettingsDi
     element: host,
     show,
     hide,
-    isOpen: () => open,
     refresh,
   };
 }

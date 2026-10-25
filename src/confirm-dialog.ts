@@ -10,7 +10,7 @@ export interface ConfirmDialog {
   element: HTMLDialogElement;
   show(message: string): Promise<boolean>;
   hide(): void;
-  isOpen(): boolean;
+
 }
 
 export function createConfirmDialog(
@@ -83,5 +83,5 @@ export function createConfirmDialog(
     if (event.target === dialog) hide();
   });
 
-  return { element: dialog, show, hide, isOpen: () => open };
+  return { element: dialog, show, hide,   };
 }

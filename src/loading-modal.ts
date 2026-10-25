@@ -11,7 +11,7 @@ export interface LoadingModal {
   show(): void;
   hide(): void;
   cancelLoading(): void;
-  isOpen(): boolean;
+
 }
 
 export function createLoadingModal(options: LoadingModalOptions = {}): LoadingModal {
@@ -67,6 +67,6 @@ export function createLoadingModal(options: LoadingModalOptions = {}): LoadingMo
     cancelLoading: hide,
     show,
     hide,
-    isOpen: () => open,
+
   };
 }
