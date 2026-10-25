@@ -1,3 +1,4 @@
+import "./settings-dialog.css";
 import { useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import type { UserSettings } from "./settings";
