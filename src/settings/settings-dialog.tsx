@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import type { UserSettings } from "./settings";
 import { WordFrequencyThreshold } from "./word-frequency-threshold";
+import { VerticalTabs } from "./vertical-tabs";
 import { lockScroll, unlockScroll } from "../scroll-lock";
 
 export interface SettingsDialogOptions {
@@ -64,9 +65,20 @@ export function SettingsDialogView({
         }}
       >
         <h2>Settings</h2>
-        <WordFrequencyThreshold
-          frequency={frequency}
-          onFrequencyChange={onFrequencyChange}
+        <VerticalTabs
+          ariaLabel="Settings sections"
+          tabs={[
+            {
+              id: "word-frequency",
+              label: "Word frequency",
+              content: (
+                <WordFrequencyThreshold
+                  frequency={frequency}
+                  onFrequencyChange={onFrequencyChange}
+                />
+              ),
+            },
+          ]}
         />
         <div className="settings-actions">
           <button

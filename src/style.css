@@ -310,7 +310,7 @@ dialog::backdrop {
   background: var(--backdrop-color);
 }
 .settings-dialog {
-  min-width: 340px;
+  min-width: min(460px, 90vw);
   max-width: 90vw;
 }
 .settings-dialog h2 {

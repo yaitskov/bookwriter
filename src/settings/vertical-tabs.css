@@ -1,0 +1,36 @@
+.vertical-tabs {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+.vertical-tabs-list {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 2px;
+  min-width: 130px;
+  padding-right: 12px;
+  border-right: 1px solid var(--border-color-light);
+}
+.vertical-tabs-list button {
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-color-strong);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.vertical-tabs-list button:hover:enabled {
+  background: var(--hover-color);
+}
+.vertical-tabs-list button[aria-selected="true"] {
+  background: var(--hover-color);
+  border-color: var(--border-color-light);
+  font-weight: 600;
+}
+.vertical-tabs-panel {
+  flex: 1;
+  min-width: 0;
+}
