@@ -1,5 +1,5 @@
 import type { UserSettings } from "./settings";
-import { lockScroll, unlockScroll } from "./scroll-lock";
+import { lockScroll, unlockScroll } from "../scroll-lock";
 
 const MIN_EXPONENT = -9;
 const MAX_EXPONENT = 0;

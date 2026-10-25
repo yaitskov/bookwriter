@@ -1,7 +1,7 @@
 import type { ClickedWord } from "./clicked-word";
 import type { KnownWordDictionary } from "./known-word-dictionary";
 import type { UnknownWordDictionary } from "./unknown-word-dictionary";
-import type { UserSettings } from "./settings";
+import type { UserSettings } from "./settings/settings";
 import { extractSentence } from "./sentence";
 import { createThesaurus, type Thesaurus } from "./thesaurus";
 import { wordFrequency } from "./word-frequency";

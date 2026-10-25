@@ -2,7 +2,7 @@ import { extractClickedWord, type ClickedWord } from "../clicked-word";
 import { App } from "../app";
 import { type Messages } from "../messages";
 import { hideAll, isAnyPopupOpen } from "../menu/popup";
-import { type SettingsDialog } from "../settings-dialog";
+import { type SettingsDialog } from "../settings/settings-dialog";
 import { type SynonymMenu } from "../menu/synonym-menu";
 import { type UnknownMenu } from "../menu/unknown-menu";
 import { BLOCK_SELECTOR } from "../sentence";

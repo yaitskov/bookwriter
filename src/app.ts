@@ -6,7 +6,7 @@ import { parseEpubBook } from "./epub";
 import { type LoadingModal } from "./loading-modal";
 import { loadBookFile } from "./book-loader";
 import { type NavMenuController } from "./menu/nav/nav-menu";
-import { type SettingsDialog } from "./settings-dialog";
+import { type SettingsDialog } from "./settings/settings-dialog";
 import { type HelpDialog } from "./help-dialog";
 import { type ConfirmDialog } from "./confirm-dialog";
 import type { KnownWordDictionary } from "./known-word-dictionary";

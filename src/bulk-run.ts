@@ -1,6 +1,6 @@
 import { extractBookContent } from "./BookExtraction";
 import { filterOutKnownWords, type BulkSynonym, type WordDictionaries } from "./bulk-synonym";
-import type { UserSettings } from "./settings";
+import type { UserSettings } from "./settings/settings";
 
 export interface BulkRunOptions extends WordDictionaries {
   bulk: BulkSynonym;
