@@ -296,28 +296,22 @@ body.dialog-open {
   border-radius: 4px;
   padding: 0 2px;
 }
-.settings-dialog-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 10001;
-  display: none;
-  background: var(--backdrop-color);
-  font: 14px system-ui, sans-serif;
-}
-.settings-dialog {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 10002;
-  min-width: 340px;
-  max-width: 90vw;
+dialog {
+  margin: auto;
+  color: var(--text-color-strong);
   background: var(--surface-color);
   border: 1px solid var(--border-color-light);
   border-radius: 6px;
   box-shadow: 0 4px 20px var(--shadow-color-strong);
   padding: 16px 20px;
-  color: var(--text-color-strong);
+  font: 14px system-ui, sans-serif;
+}
+dialog::backdrop {
+  background: var(--backdrop-color);
+}
+.settings-dialog {
+  min-width: 340px;
+  max-width: 90vw;
 }
 .settings-dialog h2 {
   margin: 0 0 12px;
@@ -393,27 +387,11 @@ body.dialog-open {
 .settings-dialog .settings-apply:hover:enabled {
   background: var(--primary-color-hover);
 }
-.help-dialog-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 10001;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: var(--backdrop-color);
-  font: 14px system-ui, sans-serif;
-}
 .help-dialog {
   min-width: 340px;
   max-width: 90vw;
   max-height: 85vh;
   overflow: auto;
-  background: var(--surface-color);
-  border: 1px solid var(--border-color-light);
-  border-radius: 6px;
-  box-shadow: 0 4px 20px var(--shadow-color-strong);
-  padding: 16px 20px;
-  color: var(--text-color-strong);
 }
 .help-dialog h2 {
   margin: 0 0 12px;
@@ -459,28 +437,13 @@ body.dialog-open {
 .help-dialog button:hover {
   background: var(--hover-color);
 }
-.loading-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 10003;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: var(--backdrop-color);
-  font: 14px system-ui, sans-serif;
-}
-.loading-modal {
+.loading-modal[open] {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
   min-width: 220px;
   padding: 20px 24px;
-  background: var(--surface-color);
-  border: 1px solid var(--border-color-light);
-  border-radius: 6px;
-  box-shadow: 0 4px 20px var(--shadow-color-strong);
-  color: var(--text-color-strong);
 }
 .loading-spinner {
   width: 32px;
@@ -624,25 +587,9 @@ body.dialog-open {
       }
   }
 }
-.confirm-dialog-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 10004;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: var(--backdrop-color);
-  font: 14px system-ui, sans-serif;
-}
 .confirm-dialog {
   min-width: 300px;
   max-width: 90vw;
-  background: var(--surface-color);
-  border: 1px solid var(--border-color-light);
-  border-radius: 6px;
-  box-shadow: 0 4px 20px var(--shadow-color-strong);
-  padding: 16px 20px;
-  color: var(--text-color-strong);
 }
 .confirm-dialog .confirm-message {
   margin: 0 0 16px;

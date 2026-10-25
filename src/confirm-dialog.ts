@@ -7,7 +7,7 @@ export interface ConfirmDialogOptions {
 }
 
 export interface ConfirmDialog {
-  element: HTMLDivElement;
+  element: HTMLDialogElement;
   show(message: string): Promise<boolean>;
   hide(): void;
   isOpen(): boolean;
@@ -20,11 +20,8 @@ export function createConfirmDialog(
   const confirmLabel = options.confirmLabel ?? "OK";
   const cancelLabel = options.cancelLabel ?? "Cancel";
 
-  const backdrop = doc.createElement("div");
-  backdrop.className = "confirm-dialog-backdrop";
-
-  const panel = doc.createElement("div");
-  panel.className = "confirm-dialog";
+  const dialog = doc.createElement("dialog");
+  dialog.className = "confirm-dialog";
 
   const message = doc.createElement("p");
   message.className = "confirm-message";
@@ -42,21 +39,21 @@ export function createConfirmDialog(
   cancelButton.textContent = cancelLabel;
 
   actions.append(confirmButton, cancelButton);
-  panel.append(message, actions);
-  backdrop.append(panel);
-  doc.body.append(backdrop);
+  dialog.append(message, actions);
+  doc.body.append(dialog);
 
   let open = false;
   let resolve: ((confirmed: boolean) => void) | null = null;
 
   const settle = (confirmed: boolean): void => {
-    if (!resolve) return;
     const done = resolve;
     resolve = null;
-    backdrop.style.display = "none";
-    open = false;
-    unlockScroll(doc);
-    done(confirmed);
+    if (open) {
+      open = false;
+      unlockScroll(doc);
+      dialog.close();
+    }
+    done?.(confirmed);
   };
 
   const hide = (): void => settle(false);
@@ -64,19 +61,27 @@ export function createConfirmDialog(
   const show = (text: string): Promise<boolean> => {
     if (resolve) settle(false);
     message.textContent = text;
-    backdrop.style.display = "flex";
     open = true;
+    dialog.showModal();
     lockScroll(doc);
     return new Promise<boolean>((res) => {
       resolve = res;
     });
   };
 
+  dialog.addEventListener("close", () => {
+    if (dialog.open || !open) return;
+    open = false;
+    unlockScroll(doc);
+    const done = resolve;
+    resolve = null;
+    done?.(false);
+  });
   confirmButton.addEventListener("click", () => settle(true));
   cancelButton.addEventListener("click", hide);
-  backdrop.addEventListener("click", (event) => {
-    if (event.target === backdrop) hide();
+  dialog.addEventListener("click", (event) => {
+    if (event.target === dialog) hide();
   });
 
-  return { element: backdrop, show, hide, isOpen: () => open };
+  return { element: dialog, show, hide, isOpen: () => open };
 }

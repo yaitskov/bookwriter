@@ -7,7 +7,7 @@ import { createThesaurus, type Thesaurus } from "./thesaurus";
 import { wordFrequency } from "./word-frequency";
 import { applySynonym, restoreWord, wrapWord } from "./word-span";
 
-const SKIP_SELECTOR = ".unknown-word, .synonym, .word-menu, .settings-dialog-backdrop";
+const SKIP_SELECTOR = ".unknown-word, .synonym, .word-menu, .settings-dialog";
 
 export interface BulkSynonymOptions {
   thesaurus?: Thesaurus;

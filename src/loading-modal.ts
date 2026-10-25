@@ -7,7 +7,7 @@ export interface LoadingModalOptions {
 }
 
 export interface LoadingModal {
-  element: HTMLDivElement;
+  element: HTMLDialogElement;
   show(): void;
   hide(): void;
   cancelLoading(): void;
@@ -17,11 +17,8 @@ export interface LoadingModal {
 export function createLoadingModal(options: LoadingModalOptions = {}): LoadingModal {
   const doc = options.doc ?? document;
 
-  const backdrop = doc.createElement("div");
-  backdrop.className = "loading-modal-backdrop";
-
-  const panel = doc.createElement("div");
-  panel.className = "loading-modal";
+  const dialog = doc.createElement("dialog");
+  dialog.className = "loading-modal";
 
   const spinner = doc.createElement("div");
   spinner.className = "loading-spinner";
@@ -35,31 +32,38 @@ export function createLoadingModal(options: LoadingModalOptions = {}): LoadingMo
   cancelButton.className = "loading-cancel";
   cancelButton.textContent = "Cancel";
 
-  panel.append(spinner, message, cancelButton);
-  backdrop.append(panel);
-  doc.body.append(backdrop);
+  dialog.append(spinner, message, cancelButton);
+  doc.body.append(dialog);
 
   let open = false;
 
   const show = (): void => {
     if (open) return;
-    backdrop.style.display = "flex";
     open = true;
+    dialog.showModal();
     lockScroll(doc);
   };
 
-  const hide = (): void => {
+  const finalize = (): void => {
     if (!open) return;
-    backdrop.style.display = "none";
     open = false;
     unlockScroll(doc);
     options.onCancel?.();
   };
 
-  cancelButton.addEventListener("click", () => hide());
+  const hide = (): void => {
+    finalize();
+    dialog.close();
+  };
+
+  dialog.addEventListener("close", () => {
+    if (dialog.open) return;
+    finalize();
+  });
+  cancelButton.addEventListener("click", hide);
 
   return {
-    element: backdrop,
+    element: dialog,
     cancelLoading: hide,
     show,
     hide,

@@ -1,5 +1,5 @@
 const WORD_PATTERN = /[\w'’-]+/g;
-const SKIP_SELECTOR = "span[data-origin-word], .word-menu, .settings-dialog-backdrop";
+const SKIP_SELECTOR = "span[data-origin-word], .word-menu, .settings-dialog";
 
 export function extractBookContent(root: ParentNode): string[] {
   const words = new Set<string>();

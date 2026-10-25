@@ -43,7 +43,7 @@ export interface HelpDialogOptions {
 }
 
 export interface HelpDialog {
-  element: HTMLDivElement;
+  element: HTMLDialogElement;
   show(): void;
   hide(): void;
   isOpen(): boolean;
@@ -52,11 +52,8 @@ export interface HelpDialog {
 export function createHelpDialog(options: HelpDialogOptions = {}): HelpDialog {
   const doc = options.doc ?? document;
 
-  const backdrop = doc.createElement("div");
-  backdrop.className = "help-dialog-backdrop";
-
-  const panel = doc.createElement("div");
-  panel.className = "help-dialog";
+  const dialog = doc.createElement("dialog");
+  dialog.className = "help-dialog";
 
   const heading = doc.createElement("h2");
   heading.textContent = "Keyboard shortcuts";
@@ -95,33 +92,37 @@ export function createHelpDialog(options: HelpDialogOptions = {}): HelpDialog {
   closeButton.textContent = "Close";
 
   actions.append(closeButton);
-  panel.append(heading, ...groups, actions);
-  backdrop.append(panel);
-  doc.body.append(backdrop);
+  dialog.append(heading, ...groups, actions);
+  doc.body.append(dialog);
 
   let open = false;
 
   const show = (): void => {
     if (open) return;
-    backdrop.style.display = "flex";
     open = true;
+    dialog.showModal();
     lockScroll(doc);
   };
 
   const hide = (): void => {
     if (!open) return;
-    backdrop.style.display = "none";
     open = false;
     unlockScroll(doc);
+    dialog.close();
   };
 
+  dialog.addEventListener("close", () => {
+    if (dialog.open || !open) return;
+    open = false;
+    unlockScroll(doc);
+  });
   closeButton.addEventListener("click", hide);
-  backdrop.addEventListener("click", (event) => {
-    if (event.target === backdrop) hide();
+  dialog.addEventListener("click", (event) => {
+    if (event.target === dialog) hide();
   });
 
   return {
-    element: backdrop,
+    element: dialog,
     show,
     hide,
     isOpen: () => open,

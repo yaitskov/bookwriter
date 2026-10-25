@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import type { UserSettings } from "./settings";
 import { lockScroll, unlockScroll } from "../scroll-lock";
@@ -50,6 +51,7 @@ export interface SettingsDialogViewProps {
   onFrequencyChange: (frequency: number) => void;
   onApply: () => void;
   onCancel: () => void;
+  onClose: () => void;
 }
 
 export function SettingsDialogView({
@@ -59,64 +61,79 @@ export function SettingsDialogView({
   onFrequencyChange,
   onApply,
   onCancel,
+  onClose,
 }: SettingsDialogViewProps): React.JSX.Element {
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const clamped = clampFrequency(frequency);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (open && !dialog.open) {
+      dialog.showModal();
+    } else if (!open && dialog.open) {
+      dialog.close();
+    }
+  }, [open]);
+
   return (
-    <div
-      className="settings-dialog-backdrop"
-      style={{ display: open ? "block" : "none" }}
+    <dialog
+      ref={dialogRef}
+      className="settings-dialog"
+      onClose={(event) => {
+        if (event.currentTarget.open) return;
+        onClose();
+      }}
     >
-      <div className="settings-dialog">
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            onApply();
-          }}
-        >
-          <h2>Settings</h2>
-          <label htmlFor="maximum-trigger-word-frequency">
-            Maximum trigger word frequency
-          </label>
-          <input
-            id="maximum-trigger-word-frequency"
-            type="range"
-            min="0"
-            max={STEPS}
-            step="1"
-            value={frequencyToSlider(frequency)}
-            onChange={(event) =>
-              onFrequencyChange(sliderToFrequency(Number(event.currentTarget.value)))
-            }
-          />
-          <div className="settings-scale">
-            <span className="settings-scale-rare">
-              <span>???</span>
-              <span>aadvark</span>
-            </span>
-            <span className="settings-scale-middle">cat</span>
-            <span className="settings-scale-common">the</span>
-          </div>
-          <div className="settings-value">
-            {formatFrequency(clamped)} (10^{Math.log10(clamped).toFixed(2)})
-          </div>
-          <p className="settings-hint">
-            Greater value replaces more words with common synonyms.
-          </p>
-          <div className="settings-actions">
-            <button
-              type="submit"
-              className="settings-apply"
-              disabled={frequency === savedFrequency}
-            >
-              Apply
-            </button>
-            <button type="button" onClick={onCancel}>
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          onApply();
+        }}
+      >
+        <h2>Settings</h2>
+        <label htmlFor="maximum-trigger-word-frequency">
+          Maximum trigger word frequency
+        </label>
+        <input
+          id="maximum-trigger-word-frequency"
+          type="range"
+          min="0"
+          max={STEPS}
+          step="1"
+          value={frequencyToSlider(frequency)}
+          onChange={(event) =>
+            onFrequencyChange(sliderToFrequency(Number(event.currentTarget.value)))
+          }
+        />
+        <div className="settings-scale">
+          <span className="settings-scale-rare">
+            <span>???</span>
+            <span>aadvark</span>
+          </span>
+          <span className="settings-scale-middle">cat</span>
+          <span className="settings-scale-common">the</span>
+        </div>
+        <div className="settings-value">
+          {formatFrequency(clamped)} (10^{Math.log10(clamped).toFixed(2)})
+        </div>
+        <p className="settings-hint">
+          Greater value replaces more words with common synonyms.
+        </p>
+        <div className="settings-actions">
+          <button
+            type="submit"
+            className="settings-apply"
+            disabled={frequency === savedFrequency}
+          >
+            Apply
+          </button>
+          <button type="button" onClick={onCancel}>
+            Cancel
+          </button>
+        </div>
+      </form>
+    </dialog>
   );
 }
 
@@ -146,6 +163,12 @@ export function createSettingsDialog(options: SettingsDialogOptions): SettingsDi
           hide();
         }}
         onCancel={hide}
+        onClose={() => {
+          if (!open) return;
+          open = false;
+          render();
+          unlockScroll(doc);
+        }}
       />,
     );
   };
