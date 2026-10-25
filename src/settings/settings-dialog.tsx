@@ -3,6 +3,11 @@ import { useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import type { UserSettings } from "./settings";
 import { About } from "./about";
+import {
+  DangerSettings,
+  type DangerActions,
+  type OpenBookInfo,
+} from "./danger";
 import { WordFrequencyThreshold } from "./word-frequency-threshold";
 import { VerticalTabs } from "./vertical-tabs";
 import { lockScroll, unlockScroll } from "../scroll-lock";
@@ -10,6 +15,7 @@ import { lockScroll, unlockScroll } from "../scroll-lock";
 export interface SettingsDialogOptions {
   settings: UserSettings;
   onApply: (value: number) => void;
+  danger: DangerActions;
   doc?: Document;
 }
 
@@ -18,26 +24,33 @@ export interface SettingsDialog {
   show(): void;
   hide(): void;
   refresh(): void;
+  refreshDanger(): void;
 }
 
 export interface SettingsDialogViewProps {
   open: boolean;
   frequency: number;
   savedFrequency: number;
+  book: OpenBookInfo | null;
   onFrequencyChange: (frequency: number) => void;
   onApply: () => void;
   onCancel: () => void;
   onClose: () => void;
+  onClearLibrary: () => Promise<void>;
+  onRemoveBook: () => Promise<void>;
 }
 
 export function SettingsDialogView({
   open,
   frequency,
   savedFrequency,
+  book,
   onFrequencyChange,
   onApply,
   onCancel,
   onClose,
+  onClearLibrary,
+  onRemoveBook,
 }: SettingsDialogViewProps): React.JSX.Element {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -85,6 +98,17 @@ export function SettingsDialogView({
               label: "About",
               content: <About />,
             },
+            {
+              id: "danger",
+              label: "Danger",
+              content: (
+                <DangerSettings
+                  book={book}
+                  onClearLibrary={onClearLibrary}
+                  onRemoveBook={onRemoveBook}
+                />
+              ),
+            },
           ]}
         />
         <div className="settings-actions">
@@ -105,7 +129,7 @@ export function SettingsDialogView({
 }
 
 export function createSettingsDialog(options: SettingsDialogOptions): SettingsDialog {
-  const { settings, onApply } = options;
+  const { settings, onApply, danger } = options;
   const doc = options.doc ?? document;
 
   const host = doc.createElement("div");
@@ -121,6 +145,7 @@ export function createSettingsDialog(options: SettingsDialogOptions): SettingsDi
         open={open}
         frequency={pending}
         savedFrequency={settings.maximumTriggerWordFrequency()}
+        book={danger.currentBook()}
         onFrequencyChange={(next) => {
           pending = next;
           render();
@@ -130,6 +155,8 @@ export function createSettingsDialog(options: SettingsDialogOptions): SettingsDi
           hide();
         }}
         onCancel={hide}
+        onClearLibrary={() => danger.clearLibrary()}
+        onRemoveBook={() => danger.removeCurrentBook()}
         onClose={() => {
           if (!open) return;
           open = false;
@@ -141,6 +168,10 @@ export function createSettingsDialog(options: SettingsDialogOptions): SettingsDi
 
   const refresh = (): void => {
     pending = settings.maximumTriggerWordFrequency();
+    render();
+  };
+
+  const refreshDanger = (): void => {
     render();
   };
 
@@ -166,5 +197,6 @@ export function createSettingsDialog(options: SettingsDialogOptions): SettingsDi
     show,
     hide,
     refresh,
+    refreshDanger,
   };
 }

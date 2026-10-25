@@ -1,0 +1,51 @@
+.danger {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.danger-warning {
+  margin: 0;
+  color: var(--color2);
+  font-size: 12px;
+}
+.danger-book {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color-light);
+  border-radius: 4px;
+  background: var(--surface-color);
+}
+.danger-book h3 {
+  margin: 0 0 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color2);
+}
+.danger-book-title {
+  margin: 0;
+  color: var(--text-color-strong);
+}
+.danger-book-author,
+.danger-book-empty {
+  margin: 0 0 8px;
+  color: var(--text-color-subtle);
+  font-size: 12px;
+}
+.danger-book button {
+  align-self: flex-start;
+}
+.danger .danger-clear,
+.danger .danger-remove {
+  align-self: flex-start;
+  color: var(--danger-color);
+  border-color: var(--danger-color);
+}
+.danger .danger-clear:hover:enabled,
+.danger .danger-remove:hover:enabled {
+  background: var(--danger-color);
+  border-color: var(--danger-color-hover);
+  color: #fff;
+}

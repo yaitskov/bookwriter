@@ -7,6 +7,7 @@ import { type LoadingModal } from "./loading-modal";
 import { loadBookFile } from "./book-loader";
 import { type NavMenuController } from "./menu/nav/nav-menu";
 import { type SettingsDialog } from "./settings/settings-dialog";
+import type { OpenBookInfo } from "./settings/danger";
 import { type HelpDialog } from "./help-dialog";
 import { type ConfirmDialog } from "./confirm-dialog";
 import type { KnownWordDictionary } from "./known-word-dictionary";
@@ -148,6 +149,15 @@ export class App {
     return this.openBookItemRendered < 0 || this.openBook.items.length === 0;
   }
 
+  public getOpenBookInfo(): OpenBookInfo | null {
+    if (this.isBookClosed()) return null;
+    return {
+      title: this.openBook.title,
+      authors: this.openBook.authors,
+      canRemove: this.openBookSha1 !== null,
+    };
+  }
+
   public async renderOpenBookItem(): Promise<void>  {
     const item = this.openBook.items[this.openBookItemIndex];
     if (!item) return;
@@ -266,8 +276,10 @@ export class App {
     }
     const sha = this.openBookSha1;
     const title = this.openBook.title.trim() || "this book";
+    const authors = this.openBook.authors.join(", ").trim();
+    const description = authors ? `“${title}” by ${authors}` : `“${title}”`;
     const confirmed = await this.confirmDialog.show(
-      `Remove “${title}” from your library?`,
+      `Remove ${description} from your library?`,
     );
     if (!confirmed) return;
     try {
@@ -278,6 +290,23 @@ export class App {
     } catch (error) {
       console.error("[library] failed to remove book", error);
       this.messages.add(Error("Failed to remove book from library"));
+    }
+  }
+
+  public async clearLibrary(): Promise<void> {
+    const confirmed = await this.confirmDialog.show(
+      "Remove all books from your library? This cannot be undone.",
+      { confirmLabel: "Clear library" },
+    );
+    if (!confirmed) return;
+    try {
+      await this.library.clear();
+      this.closeBookIfOpen();
+      this.messages.add(Info("Library cleared"));
+      this.onLibraryChanged?.();
+    } catch (error) {
+      console.error("[library] failed to clear library", error);
+      this.messages.add(Error("Failed to clear library"));
     }
   }
 

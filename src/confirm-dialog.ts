@@ -6,9 +6,14 @@ export interface ConfirmDialogOptions {
   cancelLabel?: string;
 }
 
+export interface ConfirmDialogShowOptions {
+  confirmLabel?: string;
+  cancelLabel?: string;
+}
+
 export interface ConfirmDialog {
   element: HTMLDialogElement;
-  show(message: string): Promise<boolean>;
+  show(message: string, options?: ConfirmDialogShowOptions): Promise<boolean>;
   hide(): void;
 
 }
@@ -17,8 +22,8 @@ export function createConfirmDialog(
   options: ConfirmDialogOptions = {},
 ): ConfirmDialog {
   const doc = options.doc ?? document;
-  const confirmLabel = options.confirmLabel ?? "OK";
-  const cancelLabel = options.cancelLabel ?? "Cancel";
+  const defaultConfirmLabel = options.confirmLabel ?? "OK";
+  const defaultCancelLabel = options.cancelLabel ?? "Cancel";
 
   const dialog = doc.createElement("dialog");
   dialog.className = "confirm-dialog";
@@ -32,11 +37,11 @@ export function createConfirmDialog(
   const confirmButton = doc.createElement("button");
   confirmButton.type = "button";
   confirmButton.className = "confirm-primary";
-  confirmButton.textContent = confirmLabel;
+  confirmButton.textContent = defaultConfirmLabel;
 
   const cancelButton = doc.createElement("button");
   cancelButton.type = "button";
-  cancelButton.textContent = cancelLabel;
+  cancelButton.textContent = defaultCancelLabel;
 
   actions.append(confirmButton, cancelButton);
   dialog.append(message, actions);
@@ -58,8 +63,10 @@ export function createConfirmDialog(
 
   const hide = (): void => settle(false);
 
-  const show = (text: string): Promise<boolean> => {
+  const show = (text: string, showOptions: ConfirmDialogShowOptions = {}): Promise<boolean> => {
     if (resolve) settle(false);
+    confirmButton.textContent = showOptions.confirmLabel ?? defaultConfirmLabel;
+    cancelButton.textContent = showOptions.cancelLabel ?? defaultCancelLabel;
     message.textContent = text;
     open = true;
     dialog.showModal();

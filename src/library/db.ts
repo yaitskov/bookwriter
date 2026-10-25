@@ -18,6 +18,7 @@ export interface BookLibrary {
   getBookCard(contentSha: Sha1): Promise<LibraryBookRecord>;
   getBookContent(contentSha: Sha1): Promise<Uint8Array>;
   removeBook(contentSha: Sha1): Promise<void>;
+  clear(): Promise<void>;
 }
 
 type StoredBookRecord = {
@@ -103,6 +104,10 @@ class Library implements BookLibrary {
 
   async removeBook(contentSha: Sha1): Promise<void> {
     return this.db.removeRecords([CONTENT, META], contentSha);
+  }
+
+  async clear(): Promise<void> {
+    return this.db.clearTables([CONTENT, META]);
   }
 }
 

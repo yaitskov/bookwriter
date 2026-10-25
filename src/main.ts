@@ -83,10 +83,17 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     }
   };
 
+  const appRef: { current: App | null } = { current: null };
   const settingsDialog = createSettingsDialog({
     settings,
     onApply: applyMaximumTriggerWordFrequency,
     doc,
+    danger: {
+      currentBook: () => appRef.current?.getOpenBookInfo() ?? null,
+      clearLibrary: () => appRef.current?.clearLibrary() ?? Promise.resolve(),
+      removeCurrentBook: () =>
+        appRef.current?.removeOpenBookFromLibrary() ?? Promise.resolve(),
+    },
   });
   const helpDialog = createHelpDialog({ doc });
   const confirmDialog = createConfirmDialog({ doc, confirmLabel: "Remove" });
@@ -116,6 +123,7 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
       onToChapterEnd: () => app.scrollTo(ToEnd()),
     })
   );
+  appRef.current = app;
   const loadNewBookBtn = getDiv("load-new-book");
   const showHelpBtn = getDiv("show-help");
   const showSettingsBtn = getDiv("show-settings");
@@ -129,7 +137,10 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     onOpenNewBook: () => app.loadNewBookDialog(),
     doc,
   });
-  app.onLibraryChanged = () => void libraryView.refresh();
+  app.onLibraryChanged = () => {
+    void libraryView.refresh();
+    settingsDialog.refreshDanger();
+  };
 
   loadNewBookBtn.addEventListener("click", () => app.loadNewBookDialog());
   showHelpBtn.addEventListener("click", () => app.helpDialog.show());

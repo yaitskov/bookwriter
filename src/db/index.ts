@@ -13,6 +13,7 @@ export interface DB {
   listSha1s(table: string): Promise<Sha1[]>;
   listRecords(table: string): Promise<unknown[]>;
   removeRecords(tables: string[], key: Sha1): Promise<void>;
+  clearTables(tables: string[]): Promise<void>;
 }
 
 function requestToPromise<T>(request: IDBRequest<T>): Promise<T> {
@@ -124,6 +125,15 @@ class SqlDb implements DB {
     const transaction = database.transaction(tables, "readwrite");
     for (const table of tables) {
       transaction.objectStore(table).delete(key.hex);
+    }
+    await transactionDone(transaction);
+  }
+
+  async clearTables(tables: string[]): Promise<void> {
+    const database = await this.database;
+    const transaction = database.transaction(tables, "readwrite");
+    for (const table of tables) {
+      transaction.objectStore(table).clear();
     }
     await transactionDone(transaction);
   }
