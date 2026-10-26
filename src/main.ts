@@ -1,4 +1,5 @@
 import "./style.css";
+import { createRef } from "react";
 import { App } from "./app";
 import { AsyncTokenFactory, type AsyncToken } from "./async-token";
 import { createBulkSynonym, restoreIneligibleSynonyms } from "./bulk-synonym";
@@ -13,7 +14,7 @@ import { initDb } from "./db/index";
 import { createKnownWordDictionary } from "./known-word-dictionary";
 import { resolveLinkTarget } from "./hyperlink";
 import { createBookLibrary } from "./library/db";
-import { createBookLibraryView } from "./library/view";
+import type { BookLibraryViewHandle } from "./library/view";
 import { createLoadingModal } from "./loading-modal";
 import { createMessages, Info, Warning } from "./messages";
 import { createNavMenu } from "./menu/nav/nav-menu";
@@ -27,6 +28,7 @@ import { BLOCK_SELECTOR } from "./sentence";
 import { createThesaurus } from "./thesaurus";
 import { createUnknownWordDictionary } from "./unknown-word-dictionary";
 import { bindPersistence } from "./word-dictionary";
+import { createC2Welcome } from "./welcome/welcome";
 
 const thesaurus = createThesaurus();
 const library = createBookLibrary(initDb("click-library"));
@@ -124,27 +126,24 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     })
   );
   appRef.current = app;
-  const loadNewBookBtn = getDiv("load-new-book");
-  const showHelpBtn = getDiv("show-help");
-  const showSettingsBtn = getDiv("show-settings");
   const unknownMenu = createUnknownMenu(doc);
   const synonymMenu = createSynonymMenu(doc);
 
-  const libraryView = createBookLibraryView({
-    target: getDiv("library"),
+  const libraryViewRef = createRef<BookLibraryViewHandle>();
+  createC2Welcome({
+    target: c2welcome,
+    doc,
     library,
+    libraryViewRef,
     onOpenBook: (contentSha) => app.openBookFromLibrary(contentSha),
     onOpenNewBook: () => app.loadNewBookDialog(),
-    doc,
+    onShowHelp: () => app.helpDialog.show(),
+    onShowSettings: () => app.settingsDialog.show(),
   });
   app.onLibraryChanged = () => {
-    void libraryView.refresh();
+    void libraryViewRef.current?.refresh();
     settingsDialog.refreshDanger();
   };
-
-  loadNewBookBtn.addEventListener("click", () => app.loadNewBookDialog());
-  showHelpBtn.addEventListener("click", () => app.helpDialog.show());
-  showSettingsBtn.addEventListener("click", () => app.settingsDialog.show());
 
   bindMenus(unknownMenu, synonymMenu, app);
 

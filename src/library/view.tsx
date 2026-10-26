@@ -1,18 +1,14 @@
 import "./library.css";
-import { createRoot } from "react-dom/client";
+import {
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from "react";
 import type { Sha1 } from "../util/hash";
 import type { BookLibrary, LibraryBookRecord } from "./db";
 
-export interface BookLibraryViewOptions {
-  target: HTMLElement;
-  library: BookLibrary;
-  onOpenBook: (contentSha: Sha1) => void;
-  onOpenNewBook: () => void;
-  doc?: Document;
-}
-
-export interface BookLibraryViewController {
-  readonly element: HTMLDivElement;
+export interface BookLibraryViewHandle {
   refresh(): Promise<void>;
 }
 
@@ -64,16 +60,34 @@ function EmptyLibraryCard({
 }
 
 export interface BookLibraryViewProps {
-  records: readonly LibraryBookRecord[];
+  library: BookLibrary;
   onOpenBook: (contentSha: Sha1) => void;
   onOpenNewBook: () => void;
+  ref?: React.Ref<BookLibraryViewHandle>;
 }
 
 export function BookLibraryView({
-  records,
+  library,
   onOpenBook,
   onOpenNewBook,
+  ref,
 }: BookLibraryViewProps): React.JSX.Element {
+  const [records, setRecords] = useState<readonly LibraryBookRecord[]>([]);
+
+  const refresh = useCallback(async (): Promise<void> => {
+    try {
+      setRecords(await library.loadBookCards());
+    } catch (error) {
+      console.error("[library-view] failed to load book cards", error);
+    }
+  }, [library]);
+
+  useImperativeHandle(ref, () => ({ refresh }), [refresh]);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
   const ordered = sortByUploadDesc(records);
   return (
     <div className="book-library">
@@ -91,41 +105,4 @@ export function BookLibraryView({
       </div>
     </div>
   );
-}
-
-export function createBookLibraryView(
-  options: BookLibraryViewOptions,
-): BookLibraryViewController {
-  const { target, library, onOpenBook, onOpenNewBook } = options;
-  const doc = options.doc ?? document;
-
-  const host = doc.createElement("div");
-  target.append(host);
-  const root = createRoot(host);
-
-  let records: readonly LibraryBookRecord[] = [];
-
-  const render = (): void => {
-    root.render(
-      <BookLibraryView
-        records={records}
-        onOpenBook={onOpenBook}
-        onOpenNewBook={onOpenNewBook}
-      />,
-    );
-  };
-
-  const refresh = async (): Promise<void> => {
-    try {
-      records = await library.loadBookCards();
-      render();
-    } catch (error) {
-      console.error("[library-view] failed to load book cards", error);
-    }
-  };
-
-  render();
-  void refresh();
-
-  return { element: host, refresh };
 }
