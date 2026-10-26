@@ -6,6 +6,7 @@ export function handleKeydown(event: KeyboardEvent, app: App): void {
   const isModalOpen = (): boolean => isAnyPopupOpen();
 
   if (event.key === "Escape") {
+    hideAll();
     app.messages.clear();
     return;
   }
