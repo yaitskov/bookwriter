@@ -36,6 +36,13 @@ export function createPopup(doc: Document, id: string): Popup {
       (button) => !button.disabled && button.getClientRects().length > 0,
     );
 
+  const focusOnHover = (event: MouseEvent): void => {
+    if (!(event.target instanceof Element)) return;
+    const button = event.target.closest("button");
+    if (button instanceof HTMLButtonElement && !button.disabled) button.focus();
+  };
+  element.addEventListener("mouseover", focusOnHover);
+
   const focusStep = (delta: number): void => {
     const buttons = visibleButtons();
     if (buttons.length === 0) return;
