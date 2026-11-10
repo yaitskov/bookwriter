@@ -86,7 +86,12 @@ export function bindMouseDoc(doc: Document, win: Window, app: App, messages: Mes
   };
 
   doc.addEventListener("wheel", onWheel, { passive: false });
-  win.addEventListener("scroll", () => messages.clear(), { passive: true });
+  win.addEventListener("scroll",
+    () => {
+      app.raiseScrollFlag();
+      messages.clear();
+    },
+    { passive: true });
 
   doc.addEventListener("dblclick", (event: Event) => {
     const target = event.target;

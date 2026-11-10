@@ -1,11 +1,16 @@
+import { InBookRef } from "./book/open-book";
+import { Sha1 } from "./util/hash";
+
 export type ScrollTo =
   | { readonly kind: "anchor"; readonly anchor: string }
   | { readonly kind: "start" }
+  | { readonly kind: "percent"; scrollTo: number }
   | { readonly kind: "end" };
 
 export const ToAnchor = (anchor: string): ScrollTo => ({ kind: "anchor", anchor });
 export const ToStart = (): ScrollTo => ({ kind: "start" });
 export const ToEnd = (): ScrollTo => ({ kind: "end" });
+export const ToPercent = (p: number): ScrollTo => ({kind: "percent", scrollTo: p});
 
 export class Scroll {
   private readonly window: Window;
@@ -30,6 +35,8 @@ export class Scroll {
       case "anchor":
         this.toAnchor(scroll.anchor);
         break;
+      case "percent":
+        this.window.scrollTo(0, Math.round(scroll.scrollTo * this.el().scrollHeight));
       case "start":
         this.window.scrollTo(0, 0);
         break;
@@ -49,7 +56,19 @@ export class Scroll {
   }
 
   private toEnd(): void {
-    const el = this.document.scrollingElement ?? this.document.documentElement;
-    this.window.scrollTo(0, el.scrollHeight);
+     this.window.scrollTo(0, this.el().scrollHeight);
+  }
+
+  private el(): Element {
+    return this.document.scrollingElement ?? this.document.documentElement;
+  }
+
+  public scrollHeightPercent(): ScrollTo {
+    let el = this.el();
+    return ToPercent(el.scrollTop / el.scrollHeight);
+  }
+
+  public asBookRef(bookSha : Sha1, itemId: number, st: ScrollTo): InBookRef {
+    return {bookSha, itemId, scrollTo: st};
   }
 }

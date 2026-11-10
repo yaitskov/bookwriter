@@ -29,6 +29,8 @@ import { createThesaurus } from "./thesaurus";
 import { createUnknownWordDictionary } from "./unknown-word-dictionary";
 import { bindPersistence } from "./word-dictionary";
 import { createC2Welcome } from "./welcome/welcome";
+import { AppRoute } from "./app-route";
+import { bindPopStateObserver, navigateTo, parseRoute } from "./pop-state-observer";
 
 const thesaurus = createThesaurus();
 const library = createBookLibrary(initDb("click-library"));
@@ -135,7 +137,9 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     doc,
     library,
     libraryViewRef,
-    onOpenBook: (contentSha) => app.openBookFromLibrary(contentSha),
+    onOpenBook: (contentSha) => {
+      app.openBookFromLibrary(contentSha).then(() => app.goToBookItem(0));
+    },
     onOpenNewBook: () => app.loadNewBookDialog(),
     onShowHelp: () => app.helpDialog.show(),
     onShowSettings: () => app.settingsDialog.show(),
@@ -144,7 +148,11 @@ export function initApp(bookItemOutput: HTMLDivElement, doc: Document = document
     void libraryViewRef.current?.refresh();
     settingsDialog.refreshDanger();
   };
-
+  bindPopStateObserver(app);
+  let initRoute = parseRoute(window.location.pathname);
+  if (initRoute) {
+    navigateTo(app, initRoute, true);
+  }
   bindMenus(unknownMenu, synonymMenu, app);
 
   doc.addEventListener("keydown", (event) => handleKeydown(event, app));

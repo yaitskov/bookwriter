@@ -22,10 +22,13 @@ const CAMBRIDGE_BASE = "https://dictionary.cambridge.org/dictionary/english/";
 import { popups, hideAll } from "./menu/popup";
 import { extractClickedWord, type ClickedWord } from "./clicked-word";
 import { resolveLinkTarget } from "./hyperlink";
+import { InBookRef, bookRefToPath } from "./book/open-book";
+import { AppRoute, appRouteToPath, BookRoute, RootRoute } from "./app-route";
 
 export type ClickedLink = { href: string; fromIndex: number }
 
 export class App {
+
   public openBookBlob : Uint8Array;
   public openBook : EpubBook;
   public openBookSha1 : Sha1 | null;
@@ -51,6 +54,7 @@ export class App {
   public readonly unknown: UnknownWordDictionary;
   public readonly thesaurus: Thesaurus;
   public readonly library: BookLibrary;
+  private scrolledAftergoToBookItem: boolean;
 
   constructor(doc: Document, win: Window, tokenFactory: AsyncTokenFactory,
               loadingModal: LoadingModal,
@@ -65,6 +69,7 @@ export class App {
     this.clicked =  { word: "", node: null, start: 0, end: 0 };
     this.synonymSpan = null;
     this.clickedLink = null;
+    this.scrolledAftergoToBookItem = false;
     this.navMenu = navMenu;
     this.doc = doc;
     this.win = win;
@@ -87,6 +92,17 @@ export class App {
     this.openBook = { items: [], media: [], fonts: [], title: "", authors: [] };
     this.openBookItemIndex = -1;
     this.openBookItemRendered = -1;
+  }
+
+  public mkInBookRef(): InBookRef | null {
+    if (this.openBookItemRendered >= 0 && this.openBookSha1) {
+      return {
+        bookSha: this.openBookSha1,
+        itemId: this.openBookItemRendered,
+        scrollTo: this.scroller.scrollHeightPercent()
+      };
+    }
+    return null;
   }
 
   public followLink() {
@@ -165,9 +181,9 @@ export class App {
     await item.render(this.bookItemOutput.id);
   }
 
-  public closeBookIfOpen() {
-    if (this.isBookClosed()) return;
-    this.closeBook();
+  public closeBookIfOpen(): boolean {
+    if (this.isBookClosed()) return false;
+    return this.closeBook();
   }
 
   public showTableOfContents() {
@@ -182,12 +198,14 @@ export class App {
     });
   }
 
-  public closeBook() {
+  public closeBook(): boolean {
     if (this.isBookClosed()) {
       this.messages.add(Warning("No book is open"));
-      return;
+      return false;
     }
 
+    this.scrolledAftergoToBookItem = false;
+    this.pushRoute(RootRoute());
     this.openBook.items[this.openBookItemRendered]?.cleanup(this.bookItemOutput.id);
     this.openBookBlob = new Uint8Array(0);
     this.openBookSha1 = null;
@@ -200,6 +218,7 @@ export class App {
     this.messages.add(Info("Book closed"));
     this.updateNavMenu();
     this.c2welcome.classList.remove('hidden');
+    return true;
   }
 
   public scrollTo(scroll: ScrollTo): void {
@@ -208,8 +227,35 @@ export class App {
     }
   }
 
-  public async goToBookItem(index: number, scroll: ScrollTo = ToStart()): Promise<void> {
+  public raiseScrollFlag() {
+    if (!this.scrolledAftergoToBookItem)
+      console.log(`First scroll after book navigation`);
+    this.scrolledAftergoToBookItem = true;
+  }
+
+  private pushHistory(ref: InBookRef) {
+     this.pushRoute(BookRoute(ref))
+  }
+
+  public pushRoute(r: AppRoute) {
+    this.win.history.pushState(r, 'app', appRouteToPath(r));
+  }
+
+  public async goToBookItem(index: number, scroll: ScrollTo = ToStart(), updateHistory: boolean = true): Promise<void> {
     if (index < 0 || index >= this.openBook.items.length) return;
+    this.scrolledAftergoToBookItem = false;
+    if (updateHistory) {
+      let currentRef = this.mkInBookRef();
+      if (currentRef && this.scrolledAftergoToBookItem) {
+        console.log(`Push ${bookRefToPath(currentRef)} to history as snapshot`)
+        this.pushHistory(currentRef);
+      }
+      if (this.openBookSha1) {
+        let targetRef = this.scroller.asBookRef(this.openBookSha1, index, scroll);
+        console.log(`Push ${bookRefToPath(targetRef)} to history as new`)
+        this.pushHistory(targetRef);
+      }
+    }
     if (index === this.openBookItemRendered) {
       this.scroller.apply(scroll);
       return;
@@ -246,13 +292,13 @@ export class App {
     this.messages.add(Info(`Loaded ${title || "book"}${by}`));
   }
 
-  private openBookWith(
+  private async openBookWith(
     load: () => Promise<Uint8Array<ArrayBuffer>>,
     tag: string,
-  ): void {
+  ): Promise<void> {
     const token = this.tokenFactory.issue();
     this.loadingModal.show();
-    load()
+    return load()
       .then((bytes) => this.openBookFromBytes(bytes, token))
       .catch((error) => console.error(`failed to open book [${tag}]`, error))
       .finally(() => token.onValid(() => this.loadingModal.hide()));
@@ -262,8 +308,8 @@ export class App {
     this.openBookWith(() => loadBookFile({ doc: this.doc }), "file");
   }
 
-  public openBookFromLibrary(contentSha: Sha1): void {
-    this.openBookWith(
+  public async openBookFromLibrary(contentSha: Sha1): Promise<void> {
+    return this.openBookWith(
       () => this.library.getBookContent(contentSha) as Promise<Uint8Array<ArrayBuffer>>,
       "library",
     );
@@ -316,7 +362,8 @@ export class App {
     if (!token.isValid()) return;
     this.openBookBlob = bookBytes;
     this.openBook = book;
-    void this.library
+    this.scrolledAftergoToBookItem = false;
+    await this.library
       .addBook(book, bookBytes)
       .then((record) => {
         this.openBookSha1 = record.bookContentHash;
